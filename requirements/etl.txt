@@ -1,0 +1,3 @@
+-r base.txt
+apscheduler==3.10.4
+typer==0.15.4
