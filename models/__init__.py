@@ -13,6 +13,8 @@ from models.race_control import RaceControlMessage
 from models.result import Result
 from models.season import Season
 from models.session import Session
+from models.starting_grid import StartingGridPosition
+from models.stint import Stint
 from models.telemetry import Telemetry
 from models.weather import Weather
 
@@ -30,6 +32,8 @@ __all__ = [
     "Result",
     "Season",
     "Session",
+    "StartingGridPosition",
+    "Stint",
     "Telemetry",
     "Weather",
 ]

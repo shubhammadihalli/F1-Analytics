@@ -26,6 +26,8 @@ from etl.pipelines import (
     ingest_seasons,
     ingest_sessions,
     ingest_standings,
+    ingest_starting_grid,
+    ingest_stints,
     ingest_telemetry,
     ingest_weather,
 )
@@ -151,6 +153,8 @@ async def ingest_season(year: int, *, include_future: bool = False, force: bool 
                         await ingest_positions.run(client, db, session_key)
                         await ingest_race_control.run(client, db, session_key)
                         await ingest_messages.run(client, db, session_key)
+                        await ingest_stints.run(client, db, session_key)
+                        await ingest_starting_grid.run(client, db, session_key)
                 except Exception:
                     logger.exception(
                         "failed to ingest session_key=%s; rolled back, will retry next run",

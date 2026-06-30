@@ -98,6 +98,22 @@ class OpenF1Client(BaseAPIClient):
         """Fetch team radio message metadata (driver, timestamp, recording URL) for a session."""
         return await self._fetch_dataframe("/team_radio", params, filters)
 
+    async def get_stints(
+        self, *, params: dict[str, Any] | None = None, **filters: Any
+    ) -> pd.DataFrame:
+        """Fetch tyre stint data (compound, lap range, tyre age) for a session."""
+        return await self._fetch_dataframe("/stints", params, filters)
+
+    async def get_starting_grid(
+        self, *, params: dict[str, Any] | None = None, **filters: Any
+    ) -> pd.DataFrame:
+        """Fetch starting grid positions for a Qualifying/Sprint Qualifying session.
+
+        OpenF1 keys grid rows to the qualifying session's own session_key,
+        not the race/sprint session the grid applies to.
+        """
+        return await self._fetch_dataframe("/starting_grid", params, filters)
+
     async def get_car_data(
         self, *, params: dict[str, Any] | None = None, **filters: Any
     ) -> pd.DataFrame:

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from backend.api.v1.router import router as v1_router
 from backend.core.config import settings
@@ -24,3 +27,9 @@ app.add_middleware(
 
 register_exception_handlers(app)
 app.include_router(v1_router, prefix="/api/v1")
+
+# Mounted last so it only catches requests the API router above didn't
+# already match - the dashboard (static HTML/JS) and the API share one
+# process and one port.
+_WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+app.mount("/", StaticFiles(directory=_WEB_DIR, html=True), name="dashboard")

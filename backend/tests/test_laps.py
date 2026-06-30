@@ -23,3 +23,12 @@ def test_list_laps_sort_by_lap_duration_descending(client: TestClient) -> None:
     assert response.status_code == 200
     durations = [lap["lap_duration"] for lap in response.json()["items"] if lap["lap_duration"] is not None]
     assert durations == sorted(durations, reverse=True)
+
+
+def test_list_laps_filters_by_year_and_session_type(client: TestClient) -> None:
+    response = client.get(
+        "/api/v1/laps", params={"year": 2026, "session_type": "Race", "session_key": 11234}
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] >= 1

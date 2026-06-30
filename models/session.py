@@ -23,6 +23,8 @@ if TYPE_CHECKING:
     from models.race_control import RaceControlMessage
     from models.result import Result
     from models.season import Season
+    from models.starting_grid import StartingGridPosition
+    from models.stint import Stint
     from models.telemetry import Telemetry
     from models.weather import Weather
 
@@ -55,3 +57,5 @@ class Session(Base):
     race_control_messages: Mapped[list[RaceControlMessage]] = relationship(back_populates="session")
     radio_messages: Mapped[list[Message]] = relationship(back_populates="session")
     telemetry_samples: Mapped[list[Telemetry]] = relationship(back_populates="session")
+    stints: Mapped[list[Stint]] = relationship(back_populates="session")
+    starting_grid_positions: Mapped[list[StartingGridPosition]] = relationship(back_populates="session")

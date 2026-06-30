@@ -85,6 +85,8 @@ async def test_authorization_header_sent_when_api_key_provided() -> None:
         ("get_race_control", "/race_control"),
         ("get_team_radio", "/team_radio"),
         ("get_car_data", "/car_data"),
+        ("get_stints", "/stints"),
+        ("get_starting_grid", "/starting_grid"),
     ],
 )
 @pytest.mark.asyncio

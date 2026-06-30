@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600;700;800;900&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:#0a0a0b; }
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb{ background:#39393f; border-radius:6px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+  @keyframes f1pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
+  @keyframes f1fade{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+  @keyframes f1spin{ to{ transform:rotate(360deg); } }
+</style>
+</helmet>
+<div style="min-height:100vh; font-family:'Archivo',system-ui,sans-serif; background:var(--bg,#0a0a0b); color:var(--text,#f4f4f3); -webkit-font-smoothing:antialiased; {{ themeVars }}">
+
+  <!-- ============ TOP BAR ============ -->
+  <header style="position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:22px; padding:0 22px; height:60px; background:var(--bg,#0a0a0b); border-bottom:1px solid var(--border,#29292e);">
+    <div style="display:flex; align-items:center; gap:12px; padding-right:6px;">
+      <div style="width:7px; height:26px; background:var(--accent,#e10600); border-radius:1px;"></div>
+      <div style="line-height:1;">
+        <div style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:21px; letter-spacing:.04em; text-transform:uppercase;">Apex<span style="color:var(--accent,#e10600);">Grid</span></div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.32em; color:var(--faint,#6a6a72); text-transform:uppercase; margin-top:2px;">{{ seasonLabel }} · Telemetry & Analytics</div>
+      </div>
+    </div>
+
+    <nav style="display:flex; align-items:stretch; gap:2px; height:100%;">
+      <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="5">
+        <button onClick="{{ tab.go }}" style="{{ tab.style }}">{{ tab.label }}</button>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;"></div>
+
+    <button onClick="{{ openSearch }}" style="display:flex; align-items:center; gap:10px; height:34px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:7px; color:var(--dim,#9a9aa2); font-family:'Archivo',sans-serif; font-size:12.5px; cursor:pointer; min-width:190px;">
+      <span style="opacity:.7;">⌕</span>
+      <span style="flex:1; text-align:left;">Search everything</span>
+      <span style="font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 5px; background:var(--surface2,#1d1d20); border:1px solid var(--border,#29292e); border-radius:4px;">⌘K</span>
+    </button>
+
+    <div style="display:flex; align-items:center; gap:7px;">
+      <!-- live refresh -->
+      <div style="display:flex; align-items:center; gap:7px; height:34px; padding:0 6px 0 10px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:7px;">
+        <span style="width:7px; height:7px; border-radius:50%; background:{{ liveDotColor }}; {{ liveDotAnim }}"></span>
+        <select value="{{ refresh }}" onChange="{{ onRefreshChange }}" style="background:transparent; border:none; color:var(--text,#f4f4f3); font-family:'Archivo',sans-serif; font-size:12px; cursor:pointer; outline:none;">
+          <option value="0">Live: Off</option>
+          <option value="30">30 sec</option>
+          <option value="60">60 sec</option>
+          <option value="300">5 min</option>
+        </select>
+      </div>
+      <!-- export -->
+      <div style="position:relative;">
+        <button onClick="{{ toggleExport }}" style="height:34px; padding:0 13px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:7px; color:var(--text,#f4f4f3); font-family:'Archivo',sans-serif; font-size:12.5px; font-weight:600; cursor:pointer;">Export ▾</button>
+        <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; right:0; top:40px; width:150px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:9px; padding:5px; box-shadow:0 16px 40px rgba(0,0,0,.5); animation:f1fade .14s ease;">
+            <sc-for list="{{ exportItems }}" as="ex" hint-placeholder-count="3">
+              <button onClick="{{ ex.go }}" style="display:flex; width:100%; align-items:center; gap:10px; padding:9px 10px; background:transparent; border:none; border-radius:6px; color:var(--text,#f4f4f3); font-family:'Archivo',sans-serif; font-size:12.5px; text-align:left; cursor:pointer;" onmouseover="this.style.background='var(--surface2,#1d1d20)'" onmouseout="this.style.background='transparent'">
+                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent,#e10600); width:30px;">{{ ex.tag }}</span>{{ ex.label }}
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <!-- theme -->
+      <button onClick="{{ toggleTheme }}" title="Toggle theme" style="width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:7px; color:var(--text,#f4f4f3); font-size:15px; cursor:pointer;">{{ themeIcon }}</button>
+    </div>
+  </header>
+
+  <!-- ============ SEARCH OVERLAY (⌘K) ============ -->
+  <sc-if value="{{ searchOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSearch }}" style="position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.6); backdrop-filter:blur(3px); display:flex; align-items:flex-start; justify-content:center; padding-top:13vh;">
+      <div onClick="{{ stop }}" style="width:min(620px,92vw); background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); overflow:hidden; animation:f1fade .16s ease;">
+        <div style="display:flex; align-items:center; gap:12px; padding:16px 18px; border-bottom:1px solid var(--border,#29292e);">
+          <span style="font-size:18px; color:var(--faint,#6a6a72);">⌕</span>
+          <input id="f1-search-input" value="{{ searchQuery }}" onInput="{{ onSearchInput }}" placeholder="Search drivers, races, constructors, circuits…" style="flex:1; background:transparent; border:none; outline:none; color:var(--text,#f4f4f3); font-family:'Archivo',sans-serif; font-size:16px;">
+          <span style="font-family:'JetBrains Mono',monospace; font-size:10px; padding:3px 6px; background:var(--surface2,#1d1d20); border:1px solid var(--border,#29292e); border-radius:5px; color:var(--faint,#6a6a72);">ESC</span>
+        </div>
+        <div style="max-height:52vh; overflow:auto; padding:8px;">
+          <sc-for list="{{ searchResults }}" as="r" hint-placeholder-count="6">
+            <button onClick="{{ r.go }}" style="display:flex; width:100%; align-items:center; gap:14px; padding:11px 12px; background:transparent; border:none; border-radius:9px; cursor:pointer; text-align:left;" onmouseover="this.style.background='var(--surface2,#1d1d20)'" onmouseout="this.style.background='transparent'">
+              <span style="width:8px; height:8px; border-radius:2px; background:{{ r.color }}; flex-shrink:0;"></span>
+              <span style="flex:1; color:var(--text,#f4f4f3); font-size:14px; font-weight:600;">{{ r.label }}</span>
+              <span style="color:var(--dim,#9a9aa2); font-size:12px;">{{ r.sub }}</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.1em; text-transform:uppercase; padding:3px 7px; background:var(--surface2,#1d1d20); border-radius:5px; color:var(--faint,#6a6a72);">{{ r.type }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ PAGE BODY ============ -->
+  <main style="padding:24px 22px 60px; max-width:1480px; margin:0 auto;">
+
+    <!-- ---------- OVERVIEW ---------- -->
+    <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Overview">
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em; color:var(--accent,#e10600); text-transform:uppercase;">Season Overview</div>
+            <h1 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:46px; line-height:.95; margin:6px 0 0; letter-spacing:-.01em;">{{ seasonLabel }} World Championship</h1>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim,#9a9aa2);">Updated {{ lastUpdated }}</div>
+        </div>
+
+        <!-- KPI grid -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-bottom:22px;">
+          <sc-for list="{{ kpiCards }}" as="k" hint-placeholder-count="9">
+            <div style="position:relative; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:16px 16px 15px; overflow:hidden;">
+              <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:{{ k.accent }};"></div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint,#6a6a72);">{{ k.label }}</div>
+              <div style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:32px; line-height:1; margin-top:9px;">{{ k.value }}</div>
+              <div style="font-size:12px; color:var(--dim,#9a9aa2); margin-top:6px;">{{ k.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- favorites strip -->
+        <sc-if value="{{ hasFavorites }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:22px; padding:12px 16px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px;">
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent,#e10600);">★ Favorites</span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <sc-for list="{{ favoriteCards }}" as="f" hint-placeholder-count="2">
+                <button onClick="{{ f.go }}" style="display:flex; align-items:center; gap:8px; padding:6px 12px 6px 8px; background:var(--surface2,#1d1d20); border:1px solid var(--border,#29292e); border-radius:20px; cursor:pointer; color:var(--text,#f4f4f3);">
+                  <span style="width:8px;height:8px;border-radius:50%;background:{{ f.color }};"></span>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;">{{ f.code }}</span>
+                  <span style="font-size:12px;">{{ f.points }} pts</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- standings table + constructor bar -->
+        <div style="display:grid; grid-template-columns:1.35fr 1fr; gap:14px; margin-bottom:14px;">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;">
+              <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:20px; margin:0; text-transform:uppercase; letter-spacing:.02em;">Drivers' Championship</h2>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">PTS / WINS / PODIUMS</span>
+            </div>
+            <div>
+              <sc-for list="{{ standingsRows }}" as="d" hint-placeholder-count="10">
+                <div onClick="{{ d.go }}" style="display:grid; grid-template-columns:26px 1fr auto; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border,#29292e); cursor:pointer;">
+                  <span style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:17px; color:{{ d.posColor }}; text-align:center;">{{ d.pos }}</span>
+                  <div style="min-width:0;">
+                    <div style="display:flex; align-items:center; gap:9px;">
+                      <span style="width:4px; height:18px; background:{{ d.color }}; border-radius:1px;"></span>
+                      <span style="font-weight:700; font-size:14px;">{{ d.name }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">{{ d.team }}</span>
+                    </div>
+                    <div style="height:4px; margin-top:6px; margin-left:13px; background:var(--surface2,#1d1d20); border-radius:3px; overflow:hidden;">
+                      <div style="height:100%; width:{{ d.barW }}; background:{{ d.color }};"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:baseline; gap:14px; font-family:'JetBrains Mono',monospace;">
+                    <span style="font-size:17px; font-weight:700;">{{ d.points }}</span>
+                    <span style="font-size:12px; color:var(--dim,#9a9aa2); width:14px; text-align:right;">{{ d.wins }}</span>
+                    <span style="font-size:12px; color:var(--dim,#9a9aa2); width:14px; text-align:right;">{{ d.podiums }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:20px; margin:0 0 6px; text-transform:uppercase; letter-spacing:.02em;">Constructors</h2>
+            <div id="ov-constructors" style="width:100%; height:380px;"></div>
+          </div>
+        </div>
+
+        <!-- progression + wins -->
+        <div style="display:grid; grid-template-columns:1.6fr 1fr; gap:14px; margin-bottom:14px;">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:20px; margin:0 0 4px; text-transform:uppercase; letter-spacing:.02em;">Points Progression</h2>
+            <div style="font-size:12px; color:var(--dim,#9a9aa2); margin-bottom:6px;">Cumulative points across completed rounds</div>
+            <div id="ov-progression" style="width:100%; height:360px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:20px; margin:0 0 4px; text-transform:uppercase; letter-spacing:.02em;">Win Distribution</h2>
+            <div id="ov-wins" style="width:100%; height:360px;"></div>
+          </div>
+        </div>
+
+        <!-- calendar -->
+        <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:20px; margin:0; text-transform:uppercase; letter-spacing:.02em;">{{ seasonLabel }} Calendar</h2>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">{{ completedLabel }}</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px;">
+            <sc-for list="{{ calendarCards }}" as="g" hint-placeholder-count="24">
+              <div onClick="{{ g.go }}" style="position:relative; padding:12px; border-radius:10px; border:1px solid {{ g.border }}; background:{{ g.bg }}; cursor:pointer; min-height:88px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">R{{ g.round }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:{{ g.statusColor }};">{{ g.statusText }}</span>
+                </div>
+                <div style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:16px; line-height:1.05; margin-top:8px;">{{ g.name }}</div>
+                <div style="font-size:11px; color:var(--dim,#9a9aa2); margin-top:3px;">{{ g.circuit }}</div>
+                <div style="margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:11px; color:{{ g.winColor }};">{{ g.winnerText }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- DRIVERS ---------- -->
+    <sc-if value="{{ isDrivers }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Drivers">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:18px;">
+          <div style="display:flex; align-items:center; gap:18px;">
+            <div style="font-family:'Saira Condensed',sans-serif; font-weight:900; font-size:64px; line-height:.8; color:{{ driverColor }};">{{ driverNum }}</div>
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.24em; color:var(--accent,#e10600); text-transform:uppercase;">{{ driverTeam }}</div>
+              <h1 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:44px; line-height:.95; margin:4px 0 0;">{{ driverFullName }}</h1>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim,#9a9aa2); margin-top:4px;">P{{ driverStanding }} · {{ driverPoints }} PTS · {{ driverWins }} WINS · {{ driverPodiums }} PODIUMS</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button onClick="{{ toggleFavCurrent }}" style="height:42px; padding:0 16px; background:var(--surface,#141416); border:1px solid {{ favBorder }}; border-radius:8px; color:{{ favColor }}; font-family:'Archivo',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">{{ favLabel }}</button>
+            <select value="{{ selectedDriver }}" onChange="{{ onDriverChange }}" style="height:42px; padding:0 14px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:8px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:17px; cursor:pointer; outline:none;">
+              <sc-for list="{{ driverOptions }}" as="o" hint-placeholder-count="20">
+                <option value="{{ o.id }}">{{ o.label }}</option>
+              </sc-for>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Finish Positions</h2>
+            <div id="dr-finish" style="width:100%; height:300px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Lap Pace</h2>
+            <div id="dr-pace" style="width:100%; height:300px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Qualifying</h2>
+            <div id="dr-quali" style="width:100%; height:300px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Grid vs Finish</h2>
+            <div id="dr-gridfinish" style="width:100%; height:300px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Driver Radar</h2>
+            <div id="dr-radar" style="width:100%; height:300px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Points Progression</h2>
+            <div id="dr-progression" style="width:100%; height:300px;"></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- RACES ---------- -->
+    <sc-if value="{{ isRaces }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Races">
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:18px;">
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.24em; color:var(--accent,#e10600); text-transform:uppercase;">Round {{ raceRound }} · {{ raceDate }}</div>
+            <h1 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:44px; line-height:.95; margin:4px 0 0;">{{ raceName }} Grand Prix</h1>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim,#9a9aa2); margin-top:4px;">{{ raceCircuit }} · {{ raceLaps }} LAPS · WINNER {{ raceWinner }}</div>
+          </div>
+          <select value="{{ selectedRound }}" onChange="{{ onRaceChange }}" style="height:42px; padding:0 14px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:8px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:17px; cursor:pointer; outline:none;">
+            <sc-for list="{{ raceOptions }}" as="o" hint-placeholder-count="18">
+              <option value="{{ o.round }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:14px; margin-bottom:14px;">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Lap Chart — Position by Lap</h2>
+            <div id="rc-lapchart" style="width:100%; height:340px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Position Changes</h2>
+            <div id="rc-position" style="width:100%; height:340px;"></div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px; margin-bottom:14px;">
+          <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Tyre Strategy</h2>
+          <div id="rc-tyre" style="width:100%; height:330px;"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Fastest Laps</h2>
+            <div id="rc-fastest" style="width:100%; height:300px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Pit Stops</h2>
+            <div id="rc-pit" style="width:100%; height:300px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Sector Comparison</h2>
+            <div id="rc-sector" style="width:100%; height:300px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Weather</h2>
+            <div id="rc-weather" style="width:100%; height:300px;"></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- TELEMETRY ---------- -->
+    <sc-if value="{{ isTelemetry }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Telemetry">
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:18px;">
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.24em; color:var(--accent,#e10600); text-transform:uppercase;">Fastest Lap Telemetry · {{ telGp }}</div>
+            <h1 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:44px; line-height:.95; margin:4px 0 0;">Car Telemetry</h1>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:8px; padding:0 12px; height:42px; background:var(--surface,#141416); border:1px solid {{ telColorA }}; border-radius:8px;">
+              <span style="width:9px;height:9px;border-radius:50%;background:{{ telColorA }};"></span>
+              <select value="{{ telA }}" onChange="{{ onTelAChange }}" style="background:transparent; border:none; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:16px; cursor:pointer; outline:none;">
+                <sc-for list="{{ driverOptions }}" as="o" hint-placeholder-count="20"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+              </select>
+            </div>
+            <button onClick="{{ toggleCompare }}" style="height:42px; padding:0 14px; background:{{ compareBg }}; border:1px solid {{ compareBorder }}; border-radius:8px; color:{{ compareText }}; font-family:'Archivo',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">{{ compareLabel }}</button>
+            <sc-if value="{{ compareOn }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:8px; padding:0 12px; height:42px; background:var(--surface,#141416); border:1px solid {{ telColorB }}; border-radius:8px;">
+                <span style="width:9px;height:9px;border-radius:50%;background:{{ telColorB }};"></span>
+                <select value="{{ telB }}" onChange="{{ onTelBChange }}" style="background:transparent; border:none; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:16px; cursor:pointer; outline:none;">
+                  <sc-for list="{{ driverOptions }}" as="o" hint-placeholder-count="20"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+                </select>
+              </div>
+            </sc-if>
+            <button onClick="{{ resetZoom }}" style="height:42px; padding:0 14px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:8px; color:var(--dim,#9a9aa2); font-family:'Archivo',sans-serif; font-size:13px; cursor:pointer;">Reset Zoom</button>
+          </div>
+        </div>
+        <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:14px 16px 6px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim,#9a9aa2); margin:2px 4px 8px;">Drag across any trace to zoom · channels share the distance axis · hover for synced readout</div>
+          <div id="tel-main" style="width:100%; height:720px;"></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- HEAD TO HEAD ---------- -->
+    <sc-if value="{{ isH2H }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Head to Head">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em; color:var(--accent,#e10600); text-transform:uppercase;">Head to Head</div>
+          <div style="display:flex; align-items:center; justify-content:center; gap:18px; margin-top:10px; flex-wrap:wrap;">
+            <select value="{{ h2hA }}" onChange="{{ onH2HAChange }}" style="height:48px; padding:0 16px; background:var(--surface,#141416); border:2px solid {{ h2hColorA }}; border-radius:10px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:22px; cursor:pointer; outline:none;">
+              <sc-for list="{{ driverOptions }}" as="o" hint-placeholder-count="20"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+            </select>
+            <button onClick="{{ swapH2H }}" style="width:44px; height:44px; border-radius:50%; background:var(--surface2,#1d1d20); border:1px solid var(--border,#29292e); color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:15px; cursor:pointer;">VS</button>
+            <select value="{{ h2hB }}" onChange="{{ onH2HBChange }}" style="height:48px; padding:0 16px; background:var(--surface,#141416); border:2px solid {{ h2hColorB }}; border-radius:10px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:22px; cursor:pointer; outline:none;">
+              <sc-for list="{{ driverOptions }}" as="o" hint-placeholder-count="20"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+            </select>
+          </div>
+        </div>
+
+        <!-- mirrored comparison table -->
+        <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:20px 24px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:14px; font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:22px;">
+            <span style="color:{{ h2hColorA }};">{{ h2hNameA }}</span>
+            <span style="color:{{ h2hColorB }};">{{ h2hNameB }}</span>
+          </div>
+          <sc-for list="{{ h2hRows }}" as="m" hint-placeholder-count="7">
+            <div style="display:grid; grid-template-columns:1fr 130px 1fr; align-items:center; gap:14px; padding:9px 0; border-top:1px solid var(--border,#29292e);">
+              <div style="display:flex; justify-content:flex-end; align-items:center; gap:12px;">
+                <span style="font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; color:{{ m.colorA }};">{{ m.valA }}</span>
+                <div style="width:100%; max-width:240px; height:7px; background:var(--surface2,#1d1d20); border-radius:4px; display:flex; justify-content:flex-end; overflow:hidden;">
+                  <div style="height:100%; width:{{ m.barA }}; background:{{ m.fillA }}; border-radius:4px;"></div>
+                </div>
+              </div>
+              <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim,#9a9aa2);">{{ m.label }}</div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:100%; max-width:240px; height:7px; background:var(--surface2,#1d1d20); border-radius:4px; overflow:hidden;">
+                  <div style="height:100%; width:{{ m.barB }}; background:{{ m.fillB }}; border-radius:4px;"></div>
+                </div>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; color:{{ m.colorB }};">{{ m.valB }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Performance Radar</h2>
+            <div id="h2h-radar" style="width:100%; height:340px;"></div>
+          </div>
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:18px; margin:0 0 6px; text-transform:uppercase;">Qualifying vs Finish</h2>
+            <div id="h2h-scatter" style="width:100%; height:340px;"></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:900},&quot;defaultTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#e10600&quot;,&quot;options&quot;:[&quot;#e10600&quot;,&quot;#00d2be&quot;,&quot;#ffb800&quot;,&quot;#3b82f6&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;defaultPage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;overview&quot;,&quot;drivers&quot;,&quot;races&quot;,&quot;telemetry&quot;,&quot;h2h&quot;],&quot;default&quot;:&quot;overview&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+class Component extends DCLogic {
+  state = {
+    ready:false, api:null,
+    theme: (this.props.defaultTheme || 'dark'),
+    page: (this.props.defaultPage || 'overview'),
+    // data buckets
+    meta:null, kpis:null, standings:[], constructors:[], progression:null, calendar:[], wins:[],
+    selectedDriver:'1', driverData:null,
+    selectedRound:1, raceData:null,
+    telA:'1', telB:'63', compareOn:false, telDataA:null, telDataB:null,
+    h2hA:'1', h2hB:'63', h2hData:null,
+    // ui
+    searchOpen:false, searchQuery:'', searchResults:[],
+    exportOpen:false,
+    favorites:[],
+    refresh:0, lastUpdated:'—',
+  };
+
+  // ---------- lifecycle ----------
+  async componentDidMount(){
+    // restore prefs
+    try{
+      const t = localStorage.getItem('f1.theme'); if(t) this.setState({theme:t});
+      const f = JSON.parse(localStorage.getItem('f1.favorites')||'[]'); if(Array.isArray(f)) this.setState({favorites:f});
+    }catch(e){}
+    // key handlers
+    this._key = (e)=>{
+      if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); this.openSearch(); }
+      else if(e.key==='Escape'){ this.setState({searchOpen:false, exportOpen:false}); }
+    };
+    window.addEventListener('keydown', this._key);
+    this._resize = ()=>{ Object.values(this.charts||{}).forEach(c=>{ try{c.resize();}catch(e){} }); };
+    window.addEventListener('resize', this._resize);
+    document.addEventListener('click', this._docClick = ()=>{ if(this.state.exportOpen) this.setState({exportOpen:false}); });
+
+    // load data layer + initial data
+    const api = await import('./f1-api.js');
+    this.api = api;
+    const [meta,kpis,standings,constructors,progression,calendar,wins] = await Promise.all([
+      api.getSeasonMeta(), api.getKPIs(), api.getDriverStandings(), api.getConstructorStandings(),
+      api.getPointsProgression(6), api.getCalendar(), api.getWinDistribution()
+    ]);
+    const driverData = await api.getDriver(this.state.selectedDriver);
+    const raceData   = await api.getRace(this.state.selectedRound);
+    const telDataA   = await api.getTelemetry(this.state.telA, this.state.selectedRound);
+    const telDataB   = await api.getTelemetry(this.state.telB, this.state.selectedRound);
+    const h2hData    = await api.getHeadToHead(this.state.h2hA, this.state.h2hB);
+    this.setState({ ready:true, meta, kpis, standings, constructors, progression, calendar, wins,
+      driverData, raceData, telDataA, telDataB, h2hData, lastUpdated:this._now() }, ()=> this._renderCharts());
+  }
+  componentDidUpdate(prevProps){
+    // The runtime only forwards `prevProps` here, not `prevState` - track it
+    // ourselves so the change-detection below (and the search autofocus)
+    // still work.
+    const s = this.state;
+    const prevState = this._prevState || {};
+    const changed = ['page','theme','driverData','raceData','telDataA','telDataB','compareOn','h2hData']
+      .some(k=> prevState[k] !== s[k]);
+    if(changed) this._renderCharts();
+    if(prevState.searchOpen!==s.searchOpen && s.searchOpen){
+      setTimeout(()=>{ const el=document.getElementById('f1-search-input'); if(el) el.focus(); }, 30);
+    }
+    this._prevState = {...s};
+  }
+  componentWillUnmount(){
+    window.removeEventListener('keydown', this._key);
+    window.removeEventListener('resize', this._resize);
+    document.removeEventListener('click', this._docClick);
+    if(this._timer) clearInterval(this._timer);
+    Object.values(this.charts||{}).forEach(c=>{ try{c.dispose();}catch(e){} });
+  }
+
+  // ---------- helpers ----------
+  _now(){ const d=new Date(); return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+  tk(){
+    const D = {bg:'#0a0a0b',surface:'#141416',surface2:'#1d1d20',border:'#29292e',text:'#f4f4f3',dim:'#9a9aa2',faint:'#6a6a72',grid:'#222226'};
+    const L = {bg:'#f4f3f0',surface:'#ffffff',surface2:'#ecebe7',border:'#d9d7d1',text:'#15151a',dim:'#56565e',faint:'#8a8a90',grid:'#e4e2dc'};
+    const t = this.state.theme==='light' ? L : D;
+    t.accent = this.props.accentColor || '#e10600';
+    return t;
+  }
+  _ms(ms){ const s=ms/1000; const m=Math.floor(s/60); const r=(s-m*60).toFixed(3); return m+':' + (r<10?'0':'')+r; }
+
+  // ---------- chart base ----------
+  _inst(id){
+    if(!this.charts) this.charts={};
+    const el = document.getElementById(id);
+    if(!el) return null;
+    if(this.charts[id] && this.charts[id]._dom !== el){ try{this.charts[id].dispose();}catch(e){} delete this.charts[id]; }
+    if(!this.charts[id]) this.charts[id] = window.echarts.init(el, null, {renderer:'canvas'});
+    return this.charts[id];
+  }
+  _axisCommon(){
+    const t=this.tk();
+    return {
+      textStyle:{ fontFamily:'JetBrains Mono, monospace', color:t.dim },
+      axisLine:{ lineStyle:{ color:t.border } },
+      axisTick:{ show:false },
+      splitLine:{ lineStyle:{ color:t.grid } },
+      axisLabel:{ color:t.dim, fontSize:10, fontFamily:'JetBrains Mono, monospace' },
+    };
+  }
+  _tooltip(extra){
+    const t=this.tk();
+    return Object.assign({
+      backgroundColor:t.surface, borderColor:t.border, borderWidth:1,
+      textStyle:{ color:t.text, fontFamily:'JetBrains Mono, monospace', fontSize:11 },
+      padding:[8,11], extraCssText:'border-radius:8px; box-shadow:0 8px 28px rgba(0,0,0,.35);',
+    }, extra||{});
+  }
+  _grid(o){ return Object.assign({ left:42, right:18, top:24, bottom:34, containLabel:true }, o||{}); }
+
+  _renderCharts(){
+    if(!window.echarts || !this.state.ready) { if(!window.echarts){ setTimeout(()=>this._renderCharts(), 120); } return; }
+    // dispose charts not on this page to keep things clean
+    const keepByPage = {
+      overview:['ov-constructors','ov-progression','ov-wins'],
+      drivers:['dr-finish','dr-pace','dr-quali','dr-gridfinish','dr-radar','dr-progression'],
+      races:['rc-lapchart','rc-position','rc-tyre','rc-fastest','rc-pit','rc-sector','rc-weather'],
+      telemetry:['tel-main'],
+      h2h:['h2h-radar','h2h-scatter'],
+    };
+    const keep = keepByPage[this.state.page]||[];
+    Object.keys(this.charts||{}).forEach(id=>{ if(!keep.includes(id)){ try{this.charts[id].dispose();}catch(e){} delete this.charts[id]; } });
+    // build current page (defer so DOM nodes exist)
+    setTimeout(()=>{
+      try{
+        if(this.state.page==='overview') this._chOverview();
+        else if(this.state.page==='drivers') this._chDrivers();
+        else if(this.state.page==='races') this._chRaces();
+        else if(this.state.page==='telemetry') this._chTelemetry();
+        else if(this.state.page==='h2h') this._chH2H();
+      }catch(e){ console.warn('chart build', e); }
+    }, 30);
+  }
+
+  // ---------- OVERVIEW charts ----------
+  _chOverview(){
+    const t=this.tk();
+    // constructors horizontal bar
+    const cs = this.state.constructors;
+    if(cs.length){
+      const c = this._inst('ov-constructors'); if(c){
+        c.setOption({
+          tooltip:this._tooltip({trigger:'axis', axisPointer:{type:'shadow'}}),
+          grid:this._grid({left:8,right:30,top:8,bottom:8}),
+          xAxis:Object.assign({type:'value'}, this._axisCommon(), {splitLine:{lineStyle:{color:t.grid}}}),
+          yAxis:Object.assign({type:'category', inverse:true, data:cs.map(r=>r.name)}, this._axisCommon(), {splitLine:{show:false}, axisLabel:{color:t.text, fontFamily:'Archivo, sans-serif', fontSize:11, fontWeight:600}}),
+          series:[{ type:'bar', data:cs.map(r=>({value:r.points, itemStyle:{color:r.color, borderRadius:[0,4,4,0]}})), barWidth:'62%',
+            label:{show:true, position:'right', color:t.text, fontFamily:'JetBrains Mono, monospace', fontWeight:700, fontSize:11} }],
+        }, true);
+      }
+    }
+    // points progression line
+    const pg = this.state.progression;
+    if(pg){
+      const c = this._inst('ov-progression'); if(c){
+        c.setOption({
+          tooltip:this._tooltip({trigger:'axis'}),
+          legend:{ top:0, textStyle:{color:t.dim, fontFamily:'JetBrains Mono, monospace', fontSize:10}, itemWidth:14, itemHeight:8 },
+          grid:this._grid({top:36}),
+          xAxis:Object.assign({type:'category', boundaryGap:false, data:pg.rounds.map(r=>'R'+r)}, this._axisCommon()),
+          yAxis:Object.assign({type:'value', name:'PTS', nameTextStyle:{color:t.faint,fontSize:9}}, this._axisCommon()),
+          series:pg.series.map(s=>({ name:s.name, type:'line', smooth:true, symbol:'none', data:s.data,
+            lineStyle:{width:2.4, color:s.color}, itemStyle:{color:s.color}, emphasis:{focus:'series'} })),
+        }, true);
+      }
+    }
+    // win distribution donut
+    const w = this.state.wins;
+    if(w.length){
+      const c = this._inst('ov-wins'); if(c){
+        c.setOption({
+          tooltip:this._tooltip({trigger:'item', formatter:'{b}: {c} ({d}%)'}),
+          legend:{ bottom:0, textStyle:{color:t.dim, fontFamily:'JetBrains Mono, monospace', fontSize:10}, type:'scroll' },
+          series:[{ type:'pie', radius:['46%','72%'], center:['50%','44%'], avoidLabelOverlap:true,
+            itemStyle:{ borderColor:t.surface, borderWidth:2 },
+            label:{ color:t.text, fontFamily:'JetBrains Mono, monospace', fontSize:11, formatter:'{b}\n{c}' },
+            data:w.map(d=>({ name:d.name, value:d.wins, itemStyle:{color:d.color} })) }],
+        }, true);
+      }
+    }
+  }
+
+  // ---------- DRIVER charts ----------
+  _chDrivers(){
+    const t=this.tk(); const d=this.state.driverData; if(!d) return;
+    const labels=d.labels;
+    // finish positions
+    let c=this._inst('dr-finish'); if(c) c.setOption({
+      tooltip:this._tooltip({trigger:'axis', formatter:(p)=>{ const v=p[0].value; return labels[p[0].dataIndex]+': '+(v==null?'DNF':'P'+v); }}),
+      grid:this._grid(), xAxis:Object.assign({type:'category',data:labels},this._axisCommon(),{axisLabel:{rotate:55,fontSize:9,color:t.dim,fontFamily:'JetBrains Mono, monospace'}}),
+      yAxis:Object.assign({type:'value',inverse:true,min:1,max:20,interval:4},this._axisCommon()),
+      series:[{type:'line',data:d.finishes,connectNulls:false,smooth:false,symbol:'circle',symbolSize:7,
+        lineStyle:{width:2.6,color:d.color},itemStyle:{color:d.color},
+        markLine:{silent:true,symbol:'none',lineStyle:{color:t.faint,type:'dashed'},data:[{yAxis:3,label:{formatter:'Podium',color:t.faint,fontSize:9}}]}}],
+    },true);
+    // lap pace
+    c=this._inst('dr-pace'); if(c) c.setOption({
+      tooltip:this._tooltip({trigger:'axis', formatter:(p)=>labels[p[0].dataIndex]+': '+p[0].value+'s'}),
+      grid:this._grid(), xAxis:Object.assign({type:'category',data:labels},this._axisCommon(),{axisLabel:{rotate:55,fontSize:9,color:t.dim,fontFamily:'JetBrains Mono, monospace'}}),
+      yAxis:Object.assign({type:'value',scale:true,name:'sec',nameTextStyle:{color:t.faint,fontSize:9}},this._axisCommon()),
+      series:[{type:'line',data:d.pace,smooth:true,symbol:'none',areaStyle:{color:d.color,opacity:0.12},lineStyle:{width:2.4,color:d.color},itemStyle:{color:d.color}}],
+    },true);
+    // qualifying
+    c=this._inst('dr-quali'); if(c) c.setOption({
+      tooltip:this._tooltip({trigger:'axis', axisPointer:{type:'shadow'}, formatter:(p)=>labels[p[0].dataIndex]+': Q P'+p[0].value}),
+      grid:this._grid(), xAxis:Object.assign({type:'category',data:labels},this._axisCommon(),{axisLabel:{rotate:55,fontSize:9,color:t.dim,fontFamily:'JetBrains Mono, monospace'}}),
+      yAxis:Object.assign({type:'value',inverse:true,min:1,max:20,interval:4},this._axisCommon()),
+      series:[{type:'bar',data:d.qualis,barWidth:'58%',itemStyle:{color:d.color,borderRadius:[0,0,3,3]}}],
+    },true);
+    // grid vs finish scatter
+    c=this._inst('dr-gridfinish'); if(c){
+      const pts=d.grids.map((g,i)=>[g, d.finishes[i]==null?20:d.finishes[i]]);
+      c.setOption({
+        tooltip:this._tooltip({formatter:(p)=>'Grid P'+p.value[0]+' → Finish P'+p.value[1]}),
+        grid:this._grid({left:36}),
+        xAxis:Object.assign({type:'value',name:'GRID',min:1,max:20,nameTextStyle:{color:t.faint,fontSize:9}},this._axisCommon()),
+        yAxis:Object.assign({type:'value',name:'FINISH',inverse:true,min:1,max:20,nameTextStyle:{color:t.faint,fontSize:9}},this._axisCommon()),
+        series:[
+          {type:'line',data:[[1,1],[20,20]],symbol:'none',lineStyle:{type:'dashed',color:t.faint,width:1},silent:true,tooltip:{show:false}},
+          {type:'scatter',data:pts,symbolSize:11,itemStyle:{color:d.color,opacity:0.85,borderColor:t.surface,borderWidth:1}},
+        ],
+      },true);
+    }
+    // radar
+    c=this._inst('dr-radar'); if(c) c.setOption({
+      tooltip:this._tooltip({}),
+      radar:{ indicator:d.radar.indicators, radius:'66%', center:['50%','54%'],
+        axisName:{color:t.dim, fontFamily:'JetBrains Mono, monospace', fontSize:10},
+        splitLine:{lineStyle:{color:t.grid}}, splitArea:{areaStyle:{color:['transparent']}}, axisLine:{lineStyle:{color:t.grid}} },
+      series:[{type:'radar',data:[{value:d.radar.values, name:d.name, areaStyle:{color:d.color,opacity:0.22}, lineStyle:{color:d.color,width:2}, itemStyle:{color:d.color}}]}],
+    },true);
+    // progression area
+    c=this._inst('dr-progression'); if(c) c.setOption({
+      tooltip:this._tooltip({trigger:'axis'}),
+      grid:this._grid(), xAxis:Object.assign({type:'category',data:d.rounds.map(r=>'R'+r)},this._axisCommon()),
+      yAxis:Object.assign({type:'value',name:'PTS',nameTextStyle:{color:t.faint,fontSize:9}},this._axisCommon()),
+      series:[{type:'line',data:d.progression,smooth:true,symbol:'none',areaStyle:{color:d.color,opacity:0.18},lineStyle:{width:2.6,color:d.color}}],
+    },true);
+  }
+
+  // ---------- RACE charts ----------
+  _chRaces(){
+    const t=this.tk(); const r=this.state.raceData; if(!r) return;
+    // lap chart
+    let c=this._inst('rc-lapchart'); if(c) c.setOption({
+      tooltip:this._tooltip({trigger:'axis'}),
+      legend:{ type:'scroll', top:0, textStyle:{color:t.dim,fontFamily:'JetBrains Mono, monospace',fontSize:9}, itemWidth:12,itemHeight:6 },
+      grid:this._grid({top:34}),
+      xAxis:Object.assign({type:'category',name:'LAP',data:Array.from({length:r.laps},(_,i)=>i+1),boundaryGap:false},this._axisCommon()),
+      yAxis:Object.assign({type:'value',inverse:true,min:1,max:10,interval:1,name:'POS'},this._axisCommon()),
+      series:r.lapChart.map(s=>({name:s.name,type:'line',data:s.data,symbol:'none',smooth:false,lineStyle:{width:1.8,color:s.color},itemStyle:{color:s.color},emphasis:{focus:'series',lineStyle:{width:3.5}}})),
+    },true);
+    // position changes (slope start->finish)
+    c=this._inst('rc-position'); if(c){
+      const series=r.positionChanges.slice(0,10).map(p=>({name:p.name,type:'line',data:[[0,p.start],[1,p.finish]],symbol:'circle',symbolSize:8,lineStyle:{width:2.4,color:p.color},itemStyle:{color:p.color},
+        label:{show:true,formatter:(o)=>o.dataIndex===0? p.id : '', position:'left', color:t.dim, fontFamily:'JetBrains Mono, monospace', fontSize:9}}));
+      c.setOption({
+        tooltip:this._tooltip({trigger:'item', formatter:(o)=>o.seriesName+': '+(o.dataIndex===0?'Start':'Finish')+' P'+o.value[1]}),
+        grid:this._grid({left:30,right:30}),
+        xAxis:Object.assign({type:'value',min:-0.1,max:1.1,data:[0,1]},this._axisCommon(),{axisLabel:{formatter:(v)=>v===0?'START':v===1?'FINISH':'',color:t.dim,fontFamily:'JetBrains Mono, monospace'},splitLine:{show:false}}),
+        yAxis:Object.assign({type:'value',inverse:true,min:1,max:20,interval:4},this._axisCommon()),
+        series,
+      },true);
+    }
+    // tyre strategy (custom horizontal stints)
+    c=this._inst('rc-tyre'); if(c){
+      const drivers=r.tyreStrategy.map(d=>d.id);
+      const data=[];
+      r.tyreStrategy.forEach((d,di)=>{ let start=0; d.stints.forEach(st=>{ data.push({value:[di,start,start+st.laps,st.compound], itemStyle:{color:(r.compounds[st.compound]||['',t.dim])[1]}}); start+=st.laps; }); });
+      c.setOption({
+        tooltip:this._tooltip({formatter:(p)=>{ const cm=r.compounds[p.value[3]]; return drivers[p.value[0]]+': '+(cm?cm[0]:'')+' · '+(p.value[2]-p.value[1])+' laps'; }}),
+        grid:this._grid({left:46,right:16,top:10,bottom:30}),
+        xAxis:Object.assign({type:'value',name:'LAP',min:0,max:r.laps},this._axisCommon()),
+        yAxis:Object.assign({type:'category',inverse:true,data:drivers},this._axisCommon(),{splitLine:{show:false},axisLabel:{color:t.text,fontFamily:'JetBrains Mono, monospace',fontWeight:700,fontSize:11}}),
+        series:[{type:'custom', renderItem:(params,apiR)=>{
+            const di=apiR.value(0); const s=apiR.coord([apiR.value(1),di]); const e=apiR.coord([apiR.value(2),di]);
+            const h=apiR.size([0,1])[1]*0.56;
+            return {type:'rect', shape:{x:s[0],y:s[1]-h/2,width:e[0]-s[0],height:h,r:2}, style:apiR.style()};
+          }, encode:{x:[1,2],y:0}, data}],
+      },true);
+    }
+    // fastest laps horizontal
+    c=this._inst('rc-fastest'); if(c){
+      const fl=r.fastestLaps.slice(0,10);
+      c.setOption({
+        tooltip:this._tooltip({trigger:'axis',axisPointer:{type:'shadow'},formatter:(p)=>p[0].name+': '+p[0].value.toFixed(3)+'s'}),
+        grid:this._grid({left:8,right:46,top:8,bottom:8}),
+        xAxis:Object.assign({type:'value',scale:true,name:'sec'},this._axisCommon()),
+        yAxis:Object.assign({type:'category',inverse:true,data:fl.map(x=>x.id)},this._axisCommon(),{splitLine:{show:false},axisLabel:{color:t.text,fontFamily:'JetBrains Mono, monospace',fontWeight:700}}),
+        series:[{type:'bar',barWidth:'58%',data:fl.map(x=>({value:x.time,itemStyle:{color:x.color,borderRadius:[0,4,4,0]}})),label:{show:true,position:'right',formatter:(o)=>o.value.toFixed(3),color:t.text,fontFamily:'JetBrains Mono, monospace',fontSize:10}}],
+      },true);
+    }
+    // pit stops
+    c=this._inst('rc-pit'); if(c){
+      const ps=r.pitStops.slice(0,10);
+      c.setOption({
+        tooltip:this._tooltip({trigger:'axis',axisPointer:{type:'shadow'},formatter:(p)=>p[0].name+': '+p[0].value+'s best · '+ps[p[0].dataIndex].stops+' stops'}),
+        grid:this._grid({left:8,right:40,top:8,bottom:8}),
+        xAxis:Object.assign({type:'value',scale:true,name:'sec'},this._axisCommon()),
+        yAxis:Object.assign({type:'category',inverse:true,data:ps.map(x=>x.id)},this._axisCommon(),{splitLine:{show:false},axisLabel:{color:t.text,fontFamily:'JetBrains Mono, monospace',fontWeight:700}}),
+        series:[{type:'bar',barWidth:'58%',data:ps.map(x=>({value:x.best,itemStyle:{color:x.color,borderRadius:[0,4,4,0]}})),label:{show:true,position:'right',formatter:(o)=>o.value+'s',color:t.text,fontFamily:'JetBrains Mono, monospace',fontSize:10}}],
+      },true);
+    }
+    // sector comparison stacked
+    c=this._inst('rc-sector'); if(c){
+      const sc=r.sectors; const cats=sc.map(x=>x.id);
+      c.setOption({
+        tooltip:this._tooltip({trigger:'axis',axisPointer:{type:'shadow'}}),
+        legend:{top:0,textStyle:{color:t.dim,fontFamily:'JetBrains Mono, monospace',fontSize:10}},
+        grid:this._grid({top:34}),
+        xAxis:Object.assign({type:'category',data:cats},this._axisCommon(),{axisLabel:{color:t.text,fontFamily:'JetBrains Mono, monospace',fontWeight:700}}),
+        yAxis:Object.assign({type:'value',name:'sec',scale:true},this._axisCommon()),
+        series:[
+          {name:'S1',type:'bar',stack:'lap',data:sc.map(x=>x.s1),itemStyle:{color:'#e10600'},barWidth:'46%'},
+          {name:'S2',type:'bar',stack:'lap',data:sc.map(x=>x.s2),itemStyle:{color:'#f5c518'}},
+          {name:'S3',type:'bar',stack:'lap',data:sc.map(x=>x.s3),itemStyle:{color:'#3671C6'}},
+        ],
+      },true);
+    }
+    // weather dual axis
+    c=this._inst('rc-weather'); if(c){
+      const w=r.weather;
+      c.setOption({
+        tooltip:this._tooltip({trigger:'axis'}),
+        legend:{top:0,textStyle:{color:t.dim,fontFamily:'JetBrains Mono, monospace',fontSize:10}},
+        grid:this._grid({top:34,right:42}),
+        xAxis:Object.assign({type:'category',name:'LAP',data:w.laps},this._axisCommon()),
+        yAxis:[
+          Object.assign({type:'value',name:'°C',nameTextStyle:{color:t.faint,fontSize:9}},this._axisCommon()),
+          Object.assign({type:'value',name:'%',position:'right',nameTextStyle:{color:t.faint,fontSize:9}},this._axisCommon(),{splitLine:{show:false}}),
+        ],
+        series:[
+          {name:'Track',type:'line',data:w.trackTemp,smooth:true,symbol:'none',lineStyle:{width:2.4,color:'#e10600'},itemStyle:{color:'#e10600'}},
+          {name:'Air',type:'line',data:w.airTemp,smooth:true,symbol:'none',lineStyle:{width:2.4,color:'#27F4D2'},itemStyle:{color:'#27F4D2'}},
+          {name:'Humidity',type:'line',yAxisIndex:1,data:w.humidity,smooth:true,symbol:'none',lineStyle:{width:2,type:'dashed',color:'#6692FF'},itemStyle:{color:'#6692FF'}},
+        ],
+      },true);
+    }
+  }
+
+  // ---------- TELEMETRY (centerpiece) ----------
+  _chTelemetry(){
+    const t=this.tk(); const A=this.state.telDataA; if(!A) return;
+    const B=this.state.compareOn ? this.state.telDataB : null;
+    const dist=A.distance;
+    const channels=[
+      {key:'speed',  name:'SPEED',    unit:'kph', color:A.color},
+      {key:'throttle',name:'THROTTLE',unit:'%',   color:'#52E252', max:100},
+      {key:'brake',  name:'BRAKE',    unit:'%',   color:'#e10600', max:100},
+      {key:'gear',   name:'GEAR',     unit:'',    color:'#f5c518', min:0, max:8, interval:2, step:true},
+      {key:'rpm',    name:'RPM',      unit:'',    color:'#6692FF'},
+      {key:'drs',    name:'DRS',      unit:'',    color:'#27F4D2', min:0, max:1, interval:1, step:true},
+      {key:'accel',  name:'ACCEL',    unit:'g',   color:'#FF8000'},
+    ];
+    const n=channels.length;
+    const top=10, gap=2.2, bottomPad=10, plotArea=100-top-bottomPad;
+    const h=(plotArea - gap*(n-1))/n;
+    const grids=[], xAxes=[], yAxes=[], series=[];
+    channels.forEach((ch,i)=>{
+      const gy=top + i*(h+gap);
+      grids.push({left:58,right:24,top:gy+'%',height:h+'%'});
+      xAxes.push(Object.assign({type:'value',gridIndex:i,min:0,max:A.trackLength,
+        axisLabel:{show:i===n-1,color:t.dim,fontSize:9,fontFamily:'JetBrains Mono, monospace',formatter:'{value}m'},
+        axisLine:{show:i===n-1,lineStyle:{color:t.border}},axisTick:{show:false},
+        splitLine:{show:true,lineStyle:{color:t.grid,opacity:0.5}}}));
+      yAxes.push(Object.assign({type:'value',gridIndex:i,name:ch.name,nameLocation:'middle',nameGap:42,
+        nameTextStyle:{color:ch.color,fontFamily:'Saira Condensed, sans-serif',fontWeight:700,fontSize:12,align:'center'},
+        min:ch.min!=null?ch.min:undefined, max:ch.max!=null?ch.max:undefined, interval:ch.interval, scale:ch.min==null,
+        axisLabel:{color:t.dim,fontSize:9,fontFamily:'JetBrains Mono, monospace'},
+        axisLine:{lineStyle:{color:t.border}},axisTick:{show:false},splitLine:{lineStyle:{color:t.grid,opacity:0.4}}}));
+      series.push({name:A.name,type:'line',xAxisIndex:i,yAxisIndex:i,data:A[ch.key].map((v,idx)=>[dist[idx],v]),
+        symbol:'none',smooth:!ch.step,step:ch.step?'middle':false,lineStyle:{width:1.7,color:A.color},
+        areaStyle:i===0?{color:A.color,opacity:0.10}:undefined,sampling:'lttb'});
+      if(B) series.push({name:B.name,type:'line',xAxisIndex:i,yAxisIndex:i,data:B[ch.key].map((v,idx)=>[dist[idx],v]),
+        symbol:'none',smooth:!ch.step,step:ch.step?'middle':false,lineStyle:{width:1.5,color:B.color,type:'dashed'},sampling:'lttb'});
+    });
+    const c=this._inst('tel-main'); if(!c) return;
+    c.setOption({
+      animation:false,
+      tooltip:this._tooltip({trigger:'axis',axisPointer:{type:'cross',link:[{xAxisIndex:'all'}],label:{backgroundColor:t.accent}},
+        formatter:(ps)=>{ if(!ps.length) return ''; let s='<b>'+Math.round(ps[0].value[0])+' m</b><br/>'; const seen={};
+          ps.forEach(p=>{ const ci=p.axisIndex!=null?p.axisIndex:0; const ch=channels[p.seriesIndex!=null?Math.floor(p.seriesIndex/(B?2:1)):0];
+            const cn=ch?ch.name:''; const key=p.seriesName+cn; if(seen[key])return; seen[key]=1;
+            s+= '<span style="color:'+p.color+'">●</span> '+cn+' '+p.seriesName+': <b>'+Math.round(p.value[1]*100)/100+'</b><br/>'; });
+          return s; }}),
+      axisPointer:{link:[{xAxisIndex:'all'}]},
+      legend:{ data:B?[A.name,B.name]:[A.name], top:0, right:10, textStyle:{color:t.text,fontFamily:'Saira Condensed, sans-serif',fontWeight:700,fontSize:13}, itemWidth:18,itemHeight:4 },
+      grid:grids, xAxis:xAxes, yAxis:yAxes, series,
+      dataZoom:[
+        {type:'inside', xAxisIndex:channels.map((_,i)=>i), filterMode:'none'},
+        {type:'slider', xAxisIndex:channels.map((_,i)=>i), bottom:6, height:16, filterMode:'none',
+          backgroundColor:t.surface2, borderColor:t.border, fillerColor:'rgba(225,6,0,0.14)',
+          handleStyle:{color:t.accent}, moveHandleStyle:{color:t.accent},
+          dataBackground:{lineStyle:{color:t.border},areaStyle:{color:t.grid}},
+          textStyle:{color:t.dim,fontFamily:'JetBrains Mono, monospace',fontSize:9}},
+      ],
+    }, true);
+  }
+
+  // ---------- H2H charts ----------
+  _chH2H(){
+    const t=this.tk(); const d=this.state.h2hData; if(!d) return;
+    let c=this._inst('h2h-radar'); if(c) c.setOption({
+      tooltip:this._tooltip({}),
+      legend:{top:0,textStyle:{color:t.dim,fontFamily:'JetBrains Mono, monospace',fontSize:11}},
+      radar:{ indicator:d.radarIndicators, radius:'62%', center:['50%','56%'],
+        axisName:{color:t.dim,fontFamily:'JetBrains Mono, monospace',fontSize:10},
+        splitLine:{lineStyle:{color:t.grid}}, splitArea:{areaStyle:{color:['transparent']}}, axisLine:{lineStyle:{color:t.grid}} },
+      series:[{type:'radar',data:[
+        {value:d.a.radar,name:d.a.name,areaStyle:{color:d.a.color,opacity:0.18},lineStyle:{color:d.a.color,width:2},itemStyle:{color:d.a.color}},
+        {value:d.b.radar,name:d.b.name,areaStyle:{color:d.b.color,opacity:0.18},lineStyle:{color:d.b.color,width:2},itemStyle:{color:d.b.color}},
+      ]}],
+    },true);
+    c=this._inst('h2h-scatter'); if(c) c.setOption({
+      tooltip:this._tooltip({formatter:(p)=>p.seriesName+': Q P'+p.value[0]+' → P'+p.value[1]}),
+      legend:{top:0,textStyle:{color:t.dim,fontFamily:'JetBrains Mono, monospace',fontSize:11}},
+      grid:this._grid({top:34,left:36}),
+      xAxis:Object.assign({type:'value',name:'QUALI',min:1,max:20,nameTextStyle:{color:t.faint,fontSize:9}},this._axisCommon()),
+      yAxis:Object.assign({type:'value',name:'FINISH',inverse:true,min:1,max:20,nameTextStyle:{color:t.faint,fontSize:9}},this._axisCommon()),
+      series:[
+        {name:d.a.name,type:'scatter',data:d.a.scatter,symbolSize:10,itemStyle:{color:d.a.color,opacity:0.8}},
+        {name:d.b.name,type:'scatter',data:d.b.scatter,symbolSize:10,itemStyle:{color:d.b.color,opacity:0.8}},
+      ],
+    },true);
+  }
+
+  // ---------- data refresh ----------
+  async _reloadPageData(){
+    const api=this.api; if(!api) return;
+    api._advanceLive();
+    const upd={ lastUpdated:this._now() };
+    const [kpis,standings,constructors]=await Promise.all([api.getKPIs(),api.getDriverStandings(),api.getConstructorStandings()]);
+    Object.assign(upd,{kpis,standings,constructors});
+    this.setState(upd, ()=> this._renderCharts());
+  }
+
+  // ---------- selection handlers ----------
+  async _selDriver(id){ const driverData=await this.api.getDriver(id); this.setState({selectedDriver:id, driverData}, ()=>this._renderCharts()); }
+  async _selRace(round){ const raceData=await this.api.getRace(round);
+    const telDataA=await this.api.getTelemetry(this.state.telA, round);
+    const telDataB=await this.api.getTelemetry(this.state.telB, round);
+    this.setState({selectedRound:round, raceData, telDataA, telDataB}, ()=>this._renderCharts()); }
+  async _selTelA(id){ const telDataA=await this.api.getTelemetry(id, this.state.selectedRound); this.setState({telA:id, telDataA}, ()=>this._renderCharts()); }
+  async _selTelB(id){ const telDataB=await this.api.getTelemetry(id, this.state.selectedRound); this.setState({telB:id, telDataB}, ()=>this._renderCharts()); }
+  async _selH2H(a,b){ const h2hData=await this.api.getHeadToHead(a,b); this.setState({h2hA:a,h2hB:b,h2hData}, ()=>this._renderCharts()); }
+
+  // ---------- export ----------
+  _download(name, blob){ const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
+  _exportCSV(){
+    const p=this.state.page; let rows=[], name='f1-export.csv';
+    if(p==='overview'){ name='driver-standings.csv'; rows=[['Pos','Driver','Team','Points','Wins','Podiums','Poles']]; this.state.standings.forEach(r=>rows.push([r.pos,this.api.driverName(r.id),r.team,r.points,r.wins,r.podiums,r.poles])); }
+    else if(p==='drivers' && this.state.driverData){ const d=this.state.driverData; name=d.code+'-results.csv'; rows=[['Round','GP','Grid','Finish','Quali','Pace(s)']]; d.rounds.forEach((rd,i)=>rows.push([rd,d.labels[i],d.grids[i],d.finishes[i]==null?'DNF':d.finishes[i],d.qualis[i],d.pace[i]])); }
+    else if(p==='races' && this.state.raceData){ const r=this.state.raceData; name=r.name+'-fastestlaps.csv'; rows=[['Driver','FastestLap(s)']]; r.fastestLaps.forEach(x=>rows.push([this.api.driverName(x.id),x.time])); }
+    else if(p==='h2h' && this.state.h2hData){ const d=this.state.h2hData; name='h2h.csv'; rows=[['Metric',d.a.name,d.b.name]]; d.metrics.forEach(m=>rows.push([d.metricLabels[m],d.a[m],d.b[m]])); }
+    else { rows=[['No tabular data on this page']]; }
+    const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+    this._download(name, new Blob([csv],{type:'text/csv'}));
+  }
+  _exportPNG(){
+    const ids=({overview:'ov-progression',drivers:'dr-finish',races:'rc-lapchart',telemetry:'tel-main',h2h:'h2h-radar'})[this.state.page];
+    const inst=this.charts&&this.charts[ids];
+    if(inst){ const url=inst.getDataURL({type:'png',pixelRatio:2,backgroundColor:this.tk().surface});
+      const a=document.createElement('a'); a.href=url; a.download=this.state.page+'-chart.png'; a.click(); }
+  }
+  _exportPDF(){ window.print(); }
+
+  // ---------- render values ----------
+  renderVals(){
+    const s=this.state; const api=this.api; const t=this.tk();
+    const themeVars = `--bg:${t.bg};--surface:${t.surface};--surface2:${t.surface2};--border:${t.border};--text:${t.text};--dim:${t.dim};--faint:${t.faint};--accent:${t.accent};`;
+    const pageList=[['overview','Overview'],['drivers','Drivers'],['races','Races'],['telemetry','Telemetry'],['h2h','Head to Head']];
+    const tabs=pageList.map(([id,label])=>{
+      const active=s.page===id;
+      const style=`display:flex; align-items:center; white-space:nowrap; padding:0 14px; height:100%; background:transparent; border:none; border-bottom:2px solid ${active?t.accent:'transparent'}; color:${active?t.text:t.dim}; font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:.02em; text-transform:uppercase; cursor:pointer;`;
+      return { label, style, go:()=>this._goPage(id) };
+    });
+
+    const fmtName=(id)=> api?api.driverName(id):id;
+    const fmtColor=(id)=> api?api.teamColor(id):'#888';
+
+    // KPI cards
+    let kpiCards=[];
+    if(s.kpis){ const k=s.kpis; const teamName=(tid)=>{ const T=api.TEAMS.find(x=>x.id===tid); return T?T.short:tid; };
+      kpiCards=[
+        {label:'Championship Leader', value:(api?api.DRIVERS.find(d=>d.id===k.championLeader.id).code:''), sub:fmtName(k.championLeader.id)+' · '+k.championLeader.points+' pts', accent:fmtColor(k.championLeader.id)},
+        {label:'Constructor Leader', value:teamName(k.constructorLeader.team), sub:k.constructorLeader.points+' pts', accent:(api?api.TEAMS.find(x=>x.id===k.constructorLeader.team).color:t.accent)},
+        {label:'Races', value:k.completedRaces+' / '+k.totalRaces, sub:'Completed this season', accent:t.accent},
+        {label:'Remaining', value:k.remainingRaces, sub:'Rounds to go', accent:t.accent},
+        {label:'Fastest Lap', value:k.fastestLap.time, sub:fmtName(k.fastestLap.id)+' · '+k.fastestLap.gp, accent:fmtColor(k.fastestLap.id)},
+        {label:'Most Wins', value:k.mostWins.value, sub:fmtName(k.mostWins.id), accent:fmtColor(k.mostWins.id)},
+        {label:'Most Poles', value:k.mostPoles.value, sub:fmtName(k.mostPoles.id), accent:fmtColor(k.mostPoles.id)},
+        {label:'Most Podiums', value:k.mostPodiums.value, sub:fmtName(k.mostPodiums.id), accent:fmtColor(k.mostPodiums.id)},
+      ];
+    }
+
+    // standings rows
+    const maxPts=s.standings.length?s.standings[0].points:1;
+    const standingsRows=s.standings.map(r=>({
+      pos:r.pos, name:fmtName(r.id), code:(api?api.DRIVERS.find(d=>d.id===r.id).code:r.id),
+      team:(api?api.TEAMS.find(x=>x.id===r.team).short:''), color:fmtColor(r.id),
+      points:r.points, wins:r.wins, podiums:r.podiums, barW:Math.max(2,(r.points/maxPts*100)).toFixed(1)+'%',
+      posColor:r.pos===1?t.accent:t.text, go:()=>{ this._goPage('drivers'); this._selDriver(r.id); },
+    }));
+
+    // calendar cards
+    const calendarCards=s.calendar.map(g=>{
+      const done=g.status==='completed';
+      return { round:g.round, name:g.name, circuit:g.circuit,
+        statusText:done?'Completed':'Upcoming', statusColor:done?'#52E252':t.faint,
+        bg:done?t.surface2:'transparent', border:done?t.border:t.border,
+        winnerText:done?('WIN  '+(g.winner||'')):new Date(g.date).toLocaleDateString([], {month:'short',day:'numeric'}),
+        winColor:done?fmtColor(g.winner):t.dim,
+        go:()=>{ this._goPage('races'); this._selRace(g.round); } };
+    });
+
+    // favorites
+    const favoriteCards=s.favorites.map(id=>{ const row=s.standings.find(r=>r.id===id);
+      return { code:(api?api.DRIVERS.find(d=>d.id===id).code:id), color:fmtColor(id), points:row?row.points:0, go:()=>{ this._goPage('drivers'); this._selDriver(id); } }; });
+
+    // driver options
+    const driverOptions=(api?api.DRIVERS:[]).map(d=>({ id:d.id, label:(d.first+' '+d.last) }));
+
+    // driver page header
+    const dd=s.driverData||{};
+    // race header
+    const rd=s.raceData||{};
+    const raceOptions=s.calendar.map(g=>({ round:g.round, label:'R'+g.round+' · '+g.name }));
+
+    // telemetry
+    const telColorA=s.telDataA?s.telDataA.color:t.accent;
+    const telColorB=s.telDataB?s.telDataB.color:'#888';
+
+    // h2h rows
+    let h2hRows=[]; const dA=s.h2hData?s.h2hData.a:null, dB=s.h2hData?s.h2hData.b:null;
+    if(s.h2hData){ const d=s.h2hData;
+      h2hRows=d.metrics.map(m=>{
+        const va=d.a[m], vb=d.b[m]; const lower=d.lowerBetter.includes(m);
+        const max=Math.max(va,vb)||1;
+        const aWin = lower ? va<=vb : va>=vb;
+        return { label:d.metricLabels[m], valA:va, valB:vb,
+          barA:(va/max*100).toFixed(0)+'%', barB:(vb/max*100).toFixed(0)+'%',
+          fillA:aWin?d.a.color:t.faint, fillB:!aWin?d.b.color:t.faint,
+          colorA:aWin?d.a.color:t.dim, colorB:!aWin?d.b.color:t.dim };
+      });
+    }
+
+    const isFavCur=s.favorites.includes(s.selectedDriver);
+
+    return {
+      themeVars,
+      seasonLabel: s.meta?String(s.meta.season):'2024',
+      completedLabel: s.meta?(s.meta.completed+' of '+s.meta.totalRounds+' rounds complete'):'',
+      lastUpdated: s.lastUpdated,
+      tabs,
+      // theme + chrome
+      themeIcon: s.theme==='dark'?'☀':'☾',
+      toggleTheme:()=>{ const nt=s.theme==='dark'?'light':'dark'; try{localStorage.setItem('f1.theme',nt);}catch(e){} this.setState({theme:nt}, ()=>this._renderCharts()); },
+      refresh:String(s.refresh),
+      onRefreshChange:(e)=>{ const v=parseInt(e.target.value,10); if(this._timer) clearInterval(this._timer);
+        if(v>0){ this._timer=setInterval(()=>this._reloadPageData(), v*1000); } this.setState({refresh:v}); },
+      liveDotColor: s.refresh>0?'#52E252':t.faint,
+      liveDotAnim: s.refresh>0?'animation:f1pulse 1.4s ease-in-out infinite;':'',
+      exportOpen:s.exportOpen,
+      toggleExport:(e)=>{ e.stopPropagation(); this.setState({exportOpen:!s.exportOpen}); },
+      exportItems:[ {tag:'CSV',label:'Data (CSV)',go:()=>{this.setState({exportOpen:false}); this._exportCSV();}},
+                    {tag:'PNG',label:'Chart (PNG)',go:()=>{this.setState({exportOpen:false}); this._exportPNG();}},
+                    {tag:'PDF',label:'Page (PDF)',go:()=>{this.setState({exportOpen:false}); this._exportPDF();}} ],
+      // search
+      searchOpen:s.searchOpen, searchQuery:s.searchQuery,
+      openSearch:()=>{ this.setState({searchOpen:true}); if(api) api.searchAll('').then(searchResults=>this.setState({searchResults})); },
+      closeSearch:()=>this.setState({searchOpen:false}),
+      stop:(e)=>e.stopPropagation(),
+      onSearchInput:(e)=>{ const q=e.target.value; this.setState({searchQuery:q}); if(api) api.searchAll(q).then(r=>this.setState({searchResults:r.map(x=>this._wrapResult(x))})); },
+      searchResults:s.searchResults.map(x=>this._wrapResult(x)),
+      // pages
+      isOverview:s.page==='overview', isDrivers:s.page==='drivers', isRaces:s.page==='races', isTelemetry:s.page==='telemetry', isH2H:s.page==='h2h',
+      // overview
+      kpiCards, standingsRows, calendarCards,
+      hasFavorites:s.favorites.length>0, favoriteCards,
+      // driver
+      driverOptions, selectedDriver:s.selectedDriver,
+      onDriverChange:(e)=>this._selDriver(e.target.value),
+      driverNum:dd.num||'', driverColor:dd.color||t.accent, driverTeam:dd.teamName||'', driverFullName:dd.name||'',
+      driverStanding:dd.standing||'', driverPoints:dd.points||0, driverWins:dd.wins||0, driverPodiums:dd.podiums||0,
+      toggleFavCurrent:()=>this._toggleFav(s.selectedDriver),
+      favLabel:isFavCur?'★ Favorited':'☆ Add Favorite', favColor:isFavCur?t.accent:t.dim, favBorder:isFavCur?t.accent:t.border,
+      // race
+      raceOptions, selectedRound:String(s.selectedRound),
+      onRaceChange:(e)=>this._selRace(parseInt(e.target.value,10)),
+      raceRound:rd.round||'', raceName:rd.name||'', raceCircuit:rd.circuit||'', raceLaps:rd.laps||'',
+      raceWinner:rd.winner||'—', raceDate:rd.date?new Date(rd.date).toLocaleDateString([], {month:'long',day:'numeric',year:'numeric'}):'',
+      // telemetry
+      telA:s.telA, telB:s.telB, compareOn:s.compareOn, telColorA, telColorB,
+      telGp:s.telDataA?s.telDataA.gp:'',
+      onTelAChange:(e)=>this._selTelA(e.target.value),
+      onTelBChange:(e)=>this._selTelB(e.target.value),
+      toggleCompare:()=>this.setState({compareOn:!s.compareOn}, ()=>this._renderCharts()),
+      compareLabel:s.compareOn?'Comparing':'Compare ＋',
+      compareBg:s.compareOn?t.accent:t.surface, compareBorder:s.compareOn?t.accent:t.border, compareText:s.compareOn?'#fff':t.text,
+      resetZoom:()=>{ const c=this.charts&&this.charts['tel-main']; if(c) c.dispatchAction({type:'dataZoom',start:0,end:100}); },
+      // h2h
+      h2hA:s.h2hA, h2hB:s.h2hB, h2hRows,
+      h2hNameA:dA?dA.name:'', h2hNameB:dB?dB.name:'', h2hColorA:dA?dA.color:t.accent, h2hColorB:dB?dB.color:'#888',
+      onH2HAChange:(e)=>this._selH2H(e.target.value, s.h2hB),
+      onH2HBChange:(e)=>this._selH2H(s.h2hA, e.target.value),
+      swapH2H:()=>this._selH2H(s.h2hB, s.h2hA),
+    };
+  }
+
+  _wrapResult(x){
+    return { label:x.label, sub:x.sub, type:x.type, color:x.color, go:()=>this._gotoResult(x) };
+  }
+  _gotoResult(x){
+    this.setState({searchOpen:false, searchQuery:''});
+    if(x.type==='Driver'){ this._goPage('drivers'); this._selDriver(x.id); }
+    else if(x.type==='Race'||x.type==='Circuit'){ this._goPage('races'); this._selRace(x.id); }
+    else if(x.type==='Constructor'){ this._goPage('overview'); }
+  }
+  _goPage(id){ this.setState({page:id}, ()=>this._renderCharts()); }
+  _toggleFav(id){ const f=this.state.favorites.slice(); const i=f.indexOf(id);
+    if(i>=0) f.splice(i,1); else f.push(id);
+    try{localStorage.setItem('f1.favorites',JSON.stringify(f));}catch(e){}
+    this.setState({favorites:f}); }
+}
+</script>
+</body>
+</html>

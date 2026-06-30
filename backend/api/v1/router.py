@@ -10,9 +10,13 @@ from backend.api.v1.endpoints import (
     head_to_head,
     health,
     laps,
+    pitstops,
+    positions,
     races,
     results,
     standings,
+    starting_grid,
+    stints,
     telemetry,
     weather,
 )
@@ -28,3 +32,7 @@ router.include_router(results.router)
 router.include_router(standings.router)
 router.include_router(constructors.router)
 router.include_router(head_to_head.router)
+router.include_router(stints.router)
+router.include_router(positions.router)
+router.include_router(pitstops.router)
+router.include_router(starting_grid.router)

@@ -1,4 +1,4 @@
-"""Pit stop timing endpoint."""
+"""Driver position-over-time endpoint, used for race-replay style visualizations."""
 
 from __future__ import annotations
 
@@ -10,25 +10,25 @@ from backend.core.cache import make_key, response_cache
 from backend.core.query import apply_sort, paginate
 from backend.dependencies import Pagination, Sort, get_db, pagination_params, sort_params
 from backend.schemas.common import Page
-from backend.schemas.pitstop import PitStopOut
-from models.pitstop import PitStop
+from backend.schemas.position import PositionOut
+from models.position import Position
 
-router = APIRouter(tags=["pit-stops"])
+router = APIRouter(tags=["positions"])
 
-_SORTABLE_FIELDS = frozenset({"lap_number", "pit_duration", "stop_duration", "lane_duration"})
-_sort_dependency = sort_params(_SORTABLE_FIELDS, default="lap_number")
+_SORTABLE_FIELDS = frozenset({"date", "position"})
+_sort_dependency = sort_params(_SORTABLE_FIELDS, default="date")
 
 
-@router.get("/pit-stops", response_model=Page[PitStopOut])
-def list_pit_stops(
-    session_key: int | None = Query(None, description="Filter by session."),
+@router.get("/positions", response_model=Page[PositionOut])
+def list_positions(
+    session_key: int = Query(..., description="Session to fetch position history for (required)."),
     driver_number: int | None = Query(None, description="Filter by driver."),
     pagination: Pagination = Depends(pagination_params),
     sort: Sort = Depends(_sort_dependency),
     db: Session = Depends(get_db),
-) -> Page[PitStopOut]:
+) -> Page[PositionOut]:
     key = make_key(
-        "pit_stops",
+        "positions",
         session_key=session_key,
         driver_number=driver_number,
         page=pagination.page,
@@ -40,16 +40,14 @@ def list_pit_stops(
     if cached is not None:
         return cached
 
-    stmt = select(PitStop)
-    if session_key is not None:
-        stmt = stmt.where(PitStop.session_key == session_key)
+    stmt = select(Position).where(Position.session_key == session_key)
     if driver_number is not None:
-        stmt = stmt.where(PitStop.driver_number == driver_number)
-    stmt = apply_sort(stmt, PitStop, sort)
+        stmt = stmt.where(Position.driver_number == driver_number)
+    stmt = apply_sort(stmt, Position, sort)
 
     rows, total = paginate(db, stmt, pagination)
     page = Page.create(
-        [PitStopOut.model_validate(r) for r in rows], total, pagination.page, pagination.page_size
+        [PositionOut.model_validate(r) for r in rows], total, pagination.page, pagination.page_size
     )
     response_cache.set(key, page)
     return page

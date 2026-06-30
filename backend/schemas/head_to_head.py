@@ -10,6 +10,7 @@ from backend.schemas.driver import DriverOut
 class HeadToHeadSessionOut(BaseModel):
     session_key: int
     session_name: str | None
+    session_type: str | None
     year: int | None
     driver1_position: int | None
     driver2_position: int | None

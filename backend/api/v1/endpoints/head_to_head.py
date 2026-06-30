@@ -71,6 +71,7 @@ def head_to_head(
             HeadToHeadSessionOut(
                 session_key=session_key,
                 session_name=session.session_name,
+                session_type=session.session_type,
                 year=session.year,
                 driver1_position=res1.position,
                 driver2_position=res2.position,

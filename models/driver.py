@@ -22,6 +22,8 @@ if TYPE_CHECKING:
     from models.position import Position
     from models.race_control import RaceControlMessage
     from models.result import Result
+    from models.starting_grid import StartingGridPosition
+    from models.stint import Stint
     from models.telemetry import Telemetry
 
 
@@ -48,3 +50,5 @@ class Driver(Base):
     race_control_messages: Mapped[list[RaceControlMessage]] = relationship(back_populates="driver")
     radio_messages: Mapped[list[Message]] = relationship(back_populates="driver")
     telemetry_samples: Mapped[list[Telemetry]] = relationship(back_populates="driver")
+    stints: Mapped[list[Stint]] = relationship(back_populates="driver")
+    starting_grid_positions: Mapped[list[StartingGridPosition]] = relationship(back_populates="driver")
