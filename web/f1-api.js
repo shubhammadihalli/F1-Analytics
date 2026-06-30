@@ -17,7 +17,7 @@
  *    numbers up.
  * ==========================================================================*/
 
-const BASE = "/api/v1";
+const BASE = (typeof window !== "undefined" && window.F1_API_BASE) || "/api/v1";
 const SEASON = 2026;
 const DEFAULT_COLOUR = "#8a8a8f";
 const COMPOUND_COLOURS = {
