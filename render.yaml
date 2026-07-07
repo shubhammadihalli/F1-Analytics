@@ -29,3 +29,5 @@ services:
         value: ""
       - key: API_SPORTS_KEY
         value: ""
+      - key: GROQ_API_KEY
+        sync: false

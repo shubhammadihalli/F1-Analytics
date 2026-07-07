@@ -18,7 +18,7 @@
  * ==========================================================================*/
 
 const BASE = (typeof window !== "undefined" && window.F1_API_BASE) || "/api/v1";
-const SEASON = 2026;
+const SEASON = new Date().getFullYear();
 const DEFAULT_COLOUR = "#8a8a8f";
 const COMPOUND_COLOURS = {
   SOFT: "#E10600", MEDIUM: "#F2C200", HARD: "#E8E8E8",
@@ -654,4 +654,25 @@ export async function searchAll(q) {
     if (Q && name && name.toLowerCase().includes(Q)) res.push({ type: "Circuit", id: r.round, label: name, sub: `Round ${r.round}`, color: "#888" });
   });
   return res.slice(0, 40);
+}
+
+/* ---- AI ANALYST ---------------------------------------------------------- */
+
+export async function analyzeAI({ question, contextType = "season", raceSessionKey, driverNumber, driverNumberB, year = SEASON }) {
+  const body = {
+    question, context_type: contextType, year,
+    race_session_key: raceSessionKey || null,
+    driver_number: driverNumber ? Number(driverNumber) : null,
+    driver_number_b: driverNumberB ? Number(driverNumberB) : null,
+  };
+  const r = await fetch(`${BASE}/ai/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${r.status}`);
+  }
+  return r.json();
 }

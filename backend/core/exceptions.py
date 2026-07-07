@@ -10,6 +10,7 @@ from __future__ import annotations
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DataError
 
 from backend.core.logging import get_logger
 
@@ -49,6 +50,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content={"detail": exc.errors()}
+        )
+
+    @app.exception_handler(DataError)
+    async def handle_data_error(request: Request, exc: DataError) -> JSONResponse:
+        # Postgres raises DataError for out-of-range integers, invalid enums, etc.
+        # Surface as 422 so clients know the query params are the problem.
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"detail": "invalid query parameter value (out of range or wrong type)"},
         )
 
     @app.exception_handler(Exception)

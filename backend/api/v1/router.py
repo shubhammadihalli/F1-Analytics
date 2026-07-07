@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from backend.api.v1.endpoints import (
+    ai,
     constructors,
     drivers,
     head_to_head,
@@ -23,6 +24,7 @@ from backend.api.v1.endpoints import (
 
 router = APIRouter()
 router.include_router(health.router)
+router.include_router(ai.router)
 router.include_router(drivers.router)
 router.include_router(races.router)
 router.include_router(laps.router)

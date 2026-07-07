@@ -15,6 +15,8 @@ class BackendSettings(BaseSettings):
     cache_ttl_seconds: float = 60.0
     default_page_size: int = 50
     max_page_size: int = 500
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
 
 
 settings = BackendSettings()

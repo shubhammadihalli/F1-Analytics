@@ -111,6 +111,17 @@
   <!-- ============ PAGE BODY ============ -->
   <main style="padding:24px 22px 60px; max-width:1480px; margin:0 auto;">
 
+    <!-- ---------- STARTUP ERROR / LOADING BANNER ---------- -->
+    <sc-if value="{{ startupError }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; gap:14px; padding:18px 22px; margin-bottom:24px; background:rgba(225,6,0,0.08); border:1px solid rgba(225,6,0,0.3); border-radius:12px; animation:f1fade .3s ease;">
+        <span style="font-size:22px;">⏳</span>
+        <div>
+          <div style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:17px; color:var(--text,#f4f4f3);">{{ startupError }}</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim,#9a9aa2); margin-top:4px;">The free-tier backend spins down after inactivity — it will be ready shortly.</div>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- ---------- OVERVIEW ---------- -->
     <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
       <div data-screen-label="Overview">
@@ -417,6 +428,82 @@
       </div>
     </sc-if>
 
+    <!-- ---------- AI ANALYST ---------- -->
+    <sc-if value="{{ isAI }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="AI Analyst">
+        <div style="margin-bottom:20px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em; color:var(--accent,#e10600); text-transform:uppercase;">AI Analyst</div>
+          <h1 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:46px; line-height:.95; margin:6px 0 0; letter-spacing:-.01em;">ApexGrid AI</h1>
+          <p style="font-size:13px; color:var(--dim,#9a9aa2); margin-top:6px;">Ask anything about the 2026 season — powered by Llama 3.3 70B via Groq, grounded in real race data.</p>
+        </div>
+
+        <!-- context selector + suggested prompts -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+          <select value="{{ aiContext }}" onChange="{{ onAiContextChange }}" style="height:36px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:8px; color:var(--text,#f4f4f3); font-family:'Archivo',sans-serif; font-size:13px; cursor:pointer; outline:none;">
+            <option value="season">Season Overview</option>
+            <option value="race">Race Analysis</option>
+            <option value="driver">Driver Focus</option>
+            <option value="head_to_head">Head to Head</option>
+          </select>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">Quick prompts:</span>
+          <sc-for list="{{ aiSuggestedPrompts }}" as="p" hint-placeholder-count="4">
+            <button onClick="{{ p.go }}" style="height:30px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:6px; color:var(--dim,#9a9aa2); font-family:'JetBrains Mono',monospace; font-size:11px; cursor:pointer; white-space:nowrap;" onmouseover="this.style.borderColor='var(--accent,#e10600)';this.style.color='var(--text,#f4f4f3)'" onmouseout="this.style.borderColor='var(--border,#29292e)';this.style.color='var(--dim,#9a9aa2)'">{{ p.label }}</button>
+          </sc-for>
+        </div>
+
+        <!-- input box -->
+        <div style="display:flex; gap:10px; margin-bottom:24px;">
+          <div style="flex:1; position:relative;">
+            <textarea value="{{ aiQuestion }}" onInput="{{ onAiQuestionChange }}" onKeyDown="{{ onAiKeyDown }}" placeholder="Ask a question — e.g. 'Why did Leclerc win the British GP?' or 'Compare Antonelli and Russell this season'" rows="2" style="width:100%; resize:none; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:10px; padding:14px 16px; color:var(--text,#f4f4f3); font-family:'Archivo',sans-serif; font-size:14px; outline:none; box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent,#e10600)'" onblur="this.style.borderColor='var(--border,#29292e)'"></textarea>
+            <span style="position:absolute; right:14px; bottom:10px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">Enter ↵</span>
+          </div>
+          <button onClick="{{ onAskAI }}" style="width:52px; height:52px; align-self:flex-start; background:var(--accent,#e10600); border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">
+            <sc-if value="{{ aiLoading }}" hint-placeholder-val="{{ false }}"><span style="animation:f1spin 1s linear infinite; display:inline-block;">⌛</span></sc-if>
+            <sc-if value="{{ !aiLoading }}" hint-placeholder-val="{{ true }}"><span>↑</span></sc-if>
+          </button>
+        </div>
+
+        <!-- loading state -->
+        <sc-if value="{{ aiLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:14px; padding:20px 24px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; margin-bottom:16px; animation:f1fade .3s ease;">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--accent,#e10600);animation:f1pulse 1s ease-in-out infinite;"></span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--dim,#9a9aa2);">Analysing race data and generating insights…</span>
+          </div>
+        </sc-if>
+
+        <!-- error state -->
+        <sc-if value="{{ hasAiError }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:20px 24px; background:rgba(225,6,0,0.08); border:1px solid rgba(225,6,0,0.3); border-radius:12px; margin-bottom:16px; animation:f1fade .3s ease;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--accent,#e10600); margin-bottom:4px;">ERROR</div>
+            <div style="font-size:13px; color:var(--dim,#9a9aa2);">{{ aiError }}</div>
+          </div>
+        </sc-if>
+
+        <!-- answer -->
+        <sc-if value="{{ hasAiAnswer }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:14px; padding:24px 28px; animation:f1fade .4s ease;">
+            <!-- model tag -->
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+              <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.16em; text-transform:uppercase; padding:4px 10px; background:rgba(225,6,0,0.12); border:1px solid rgba(225,6,0,0.3); border-radius:4px; color:var(--accent,#e10600);">APEX AI</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">llama-3.3-70b · {{ aiTokens }} tokens</span>
+              <span style="margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">grounded in: {{ aiSources }}</span>
+            </div>
+            <!-- answer text -->
+            <div style="font-size:15px; line-height:1.75; color:var(--text,#f4f4f3); white-space:pre-wrap; font-family:'Archivo',sans-serif;">{{ aiAnswer }}</div>
+          </div>
+        </sc-if>
+
+        <!-- empty state hint -->
+        <sc-if value="{{ !hasAiAnswer && !hasAiError && !aiLoading }}" hint-placeholder-val="{{ true }}">
+          <div style="text-align:center; padding:60px 20px; color:var(--faint,#6a6a72);">
+            <div style="font-size:42px; margin-bottom:16px;">🏎️</div>
+            <div style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:20px; color:var(--dim,#9a9aa2);">Ask anything about the 2026 season</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; margin-top:8px;">Race strategy · Driver performance · Championship analysis</div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
   </main>
 </div>
 
@@ -433,11 +520,14 @@ class Component extends DCLogic {
     selectedRound:1, raceData:null,
     telA:'1', telB:'63', compareOn:false, telDataA:null, telDataB:null,
     h2hA:'1', h2hB:'63', h2hData:null,
+    // ai analyst
+    aiContext:'season', aiQuestion:'', aiLoading:false, aiAnswer:null, aiError:null, aiSources:[], aiTokens:0,
     // ui
     searchOpen:false, searchQuery:'', searchResults:[],
     exportOpen:false,
     favorites:[],
     refresh:0, lastUpdated:'—',
+    startupError: null,
   };
 
   // ---------- lifecycle ----------
@@ -458,19 +548,34 @@ class Component extends DCLogic {
     document.addEventListener('click', this._docClick = ()=>{ if(this.state.exportOpen) this.setState({exportOpen:false}); });
 
     // load data layer + initial data
-    const api = await import('./f1-api.js');
+    let api;
+    try {
+      api = await import('./f1-api.js');
+    } catch(e) {
+      this.setState({ startupError: 'Failed to load API module: ' + e.message });
+      return;
+    }
     this.api = api;
-    const [meta,kpis,standings,constructors,progression,calendar,wins] = await Promise.all([
-      api.getSeasonMeta(), api.getKPIs(), api.getDriverStandings(), api.getConstructorStandings(),
-      api.getPointsProgression(6), api.getCalendar(), api.getWinDistribution()
-    ]);
-    const driverData = await api.getDriver(this.state.selectedDriver);
-    const raceData   = await api.getRace(this.state.selectedRound);
-    const telDataA   = await api.getTelemetry(this.state.telA, this.state.selectedRound);
-    const telDataB   = await api.getTelemetry(this.state.telB, this.state.selectedRound);
-    const h2hData    = await api.getHeadToHead(this.state.h2hA, this.state.h2hB);
-    this.setState({ ready:true, meta, kpis, standings, constructors, progression, calendar, wins,
-      driverData, raceData, telDataA, telDataB, h2hData, lastUpdated:this._now() }, ()=> this._renderCharts());
+    try {
+      const [meta,kpis,standings,constructors,progression,calendar,wins] = await Promise.all([
+        api.getSeasonMeta(), api.getKPIs(), api.getDriverStandings(), api.getConstructorStandings(),
+        api.getPointsProgression(6), api.getCalendar(), api.getWinDistribution()
+      ]);
+      const driverData = await api.getDriver(this.state.selectedDriver);
+      const raceData   = await api.getRace(this.state.selectedRound);
+      const telDataA   = await api.getTelemetry(this.state.telA, this.state.selectedRound);
+      const telDataB   = await api.getTelemetry(this.state.telB, this.state.selectedRound);
+      const h2hData    = await api.getHeadToHead(this.state.h2hA, this.state.h2hB);
+      this.setState({ ready:true, meta, kpis, standings, constructors, progression, calendar, wins,
+        driverData, raceData, telDataA, telDataB, h2hData, lastUpdated:this._now() }, ()=> this._renderCharts());
+    } catch(e) {
+      const isStartup = e.message && (e.message.includes('502') || e.message.includes('503') || e.message.includes('Failed to fetch'));
+      this.setState({ startupError: isStartup
+        ? 'The backend is starting up — this takes about 30–60 seconds on first load. Retrying…'
+        : ('Could not load data: ' + e.message)
+      });
+      if(isStartup) setTimeout(()=>{ this.setState({startupError:null}); this.componentDidMount(); }, 8000);
+    }
   }
   componentDidUpdate(prevProps){
     // The runtime only forwards `prevProps` here, not `prevState` - track it
@@ -894,7 +999,7 @@ class Component extends DCLogic {
   renderVals(){
     const s=this.state; const api=this.api; const t=this.tk();
     const themeVars = `--bg:${t.bg};--surface:${t.surface};--surface2:${t.surface2};--border:${t.border};--text:${t.text};--dim:${t.dim};--faint:${t.faint};--accent:${t.accent};`;
-    const pageList=[['overview','Overview'],['drivers','Drivers'],['races','Races'],['telemetry','Telemetry'],['h2h','Head to Head']];
+    const pageList=[['overview','Overview'],['drivers','Drivers'],['races','Races'],['telemetry','Telemetry'],['h2h','Head to Head'],['ai','AI Analyst']];
     const tabs=pageList.map(([id,label])=>{
       const active=s.page===id;
       const style=`display:flex; align-items:center; white-space:nowrap; padding:0 14px; height:100%; background:transparent; border:none; border-bottom:2px solid ${active?t.accent:'transparent'}; color:${active?t.text:t.dim}; font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:.02em; text-transform:uppercase; cursor:pointer;`;
@@ -972,7 +1077,8 @@ class Component extends DCLogic {
 
     return {
       themeVars,
-      seasonLabel: s.meta?String(s.meta.season):'2024',
+      startupError: s.startupError || null,
+      seasonLabel: s.meta?String(s.meta.season):String(new Date().getFullYear()),
       completedLabel: s.meta?(s.meta.completed+' of '+s.meta.totalRounds+' rounds complete'):'',
       lastUpdated: s.lastUpdated,
       tabs,
@@ -997,7 +1103,7 @@ class Component extends DCLogic {
       onSearchInput:(e)=>{ const q=e.target.value; this.setState({searchQuery:q}); if(api) api.searchAll(q).then(r=>this.setState({searchResults:r.map(x=>this._wrapResult(x))})); },
       searchResults:s.searchResults.map(x=>this._wrapResult(x)),
       // pages
-      isOverview:s.page==='overview', isDrivers:s.page==='drivers', isRaces:s.page==='races', isTelemetry:s.page==='telemetry', isH2H:s.page==='h2h',
+      isOverview:s.page==='overview', isDrivers:s.page==='drivers', isRaces:s.page==='races', isTelemetry:s.page==='telemetry', isH2H:s.page==='h2h', isAI:s.page==='ai',
       // overview
       kpiCards, standingsRows, calendarCards,
       hasFavorites:s.favorites.length>0, favoriteCards,
@@ -1028,6 +1134,21 @@ class Component extends DCLogic {
       onH2HAChange:(e)=>this._selH2H(e.target.value, s.h2hB),
       onH2HBChange:(e)=>this._selH2H(s.h2hA, e.target.value),
       swapH2H:()=>this._selH2H(s.h2hB, s.h2hA),
+      // ai analyst
+      aiContext:s.aiContext, aiQuestion:s.aiQuestion, aiLoading:s.aiLoading,
+      aiAnswer:s.aiAnswer, aiError:s.aiError, aiSources:s.aiSources, aiTokens:s.aiTokens,
+      hasAiAnswer: !!s.aiAnswer,
+      hasAiError: !!s.aiError,
+      onAiContextChange:(e)=>this.setState({aiContext:e.target.value,aiAnswer:null,aiError:null}),
+      onAiQuestionChange:(e)=>this.setState({aiQuestion:e.target.value}),
+      onAiKeyDown:(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this._askAI(); }},
+      onAskAI:()=>this._askAI(),
+      aiSuggestedPrompts:[
+        {label:'Season leader', question:'Who is dominating the 2026 season and why?', ctx:'season'},
+        {label:'British GP', question:'Why did Leclerc win the British GP?', ctx:'race'},
+        {label:'Leclerc', question:"How consistent has Leclerc been this season?", ctx:'driver'},
+        {label:'ANT vs RUS', question:'Compare Antonelli and Russell this season', ctx:'head_to_head'},
+      ].map(p=>({ label:p.label, go:()=>{ this.setState({aiQuestion:p.question, aiContext:p.ctx, aiAnswer:null, aiError:null}, ()=>this._askAI()); } })),
     };
   }
 
@@ -1045,6 +1166,24 @@ class Component extends DCLogic {
     if(i>=0) f.splice(i,1); else f.push(id);
     try{localStorage.setItem('f1.favorites',JSON.stringify(f));}catch(e){}
     this.setState({favorites:f}); }
+
+  async _askAI(){
+    const s = this.state;
+    if(!s.aiQuestion.trim() || s.aiLoading || !this.api) return;
+    this.setState({aiLoading:true, aiAnswer:null, aiError:null});
+    try {
+      const res = await this.api.analyzeAI({
+        question: s.aiQuestion, contextType: s.aiContext,
+        raceSessionKey: s.aiContext==='race' ? this.state.aiRaceSession : undefined,
+        driverNumber: (s.aiContext==='driver'||s.aiContext==='head_to_head') ? s.selectedDriver : undefined,
+        driverNumberB: s.aiContext==='head_to_head' ? s.h2hB : undefined,
+        year: 2026,
+      });
+      this.setState({aiAnswer: res.answer, aiSources: res.data_sources, aiTokens: res.tokens_used, aiLoading:false});
+    } catch(e) {
+      this.setState({aiError: e.message || 'AI request failed', aiLoading:false});
+    }
+  }
 }
 </script>
 </body>
