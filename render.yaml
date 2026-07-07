@@ -12,7 +12,7 @@ services:
     region: oregon
     branch: main
     buildCommand: "pip install -r requirements/backend.txt -r requirements/etl.txt"
-    startCommand: "alembic -c database/alembic.ini upgrade head && (python etl.py || echo 'ETL failed, continuing with existing data') && exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    startCommand: "alembic -c database/alembic.ini upgrade head && exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
     healthCheckPath: /api/v1/health
     envVars:
       - key: DATABASE_URL
