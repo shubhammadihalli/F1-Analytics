@@ -910,8 +910,6 @@ class Component extends DCLogic {
       kpiCards=[
         {label:'Championship Leader', value:(api?api.DRIVERS.find(d=>d.id===k.championLeader.id).code:''), sub:fmtName(k.championLeader.id)+' · '+k.championLeader.points+' pts', accent:fmtColor(k.championLeader.id)},
         {label:'Constructor Leader', value:teamName(k.constructorLeader.team), sub:k.constructorLeader.points+' pts', accent:(api?api.TEAMS.find(x=>x.id===k.constructorLeader.team).color:t.accent)},
-        {label:'Races', value:k.completedRaces+' / '+k.totalRaces, sub:'Completed this season', accent:t.accent},
-        {label:'Remaining', value:k.remainingRaces, sub:'Rounds to go', accent:t.accent},
         {label:'Fastest Lap', value:k.fastestLap.time, sub:fmtName(k.fastestLap.id)+' · '+k.fastestLap.gp, accent:fmtColor(k.fastestLap.id)},
         {label:'Most Wins', value:k.mostWins.value, sub:fmtName(k.mostWins.id), accent:fmtColor(k.mostWins.id)},
         {label:'Most Poles', value:k.mostPoles.value, sub:fmtName(k.mostPoles.id), accent:fmtColor(k.mostPoles.id)},
