@@ -293,7 +293,7 @@ export async function getCalendar() {
     const winnerRow = done ? s.raceResults.find((x) => x.session_key === race.session_key && x.position === 1) : null;
     const name = race.circuit_short_name || `Round ${r.round}`;
     return {
-      round: r.round, name, country: name, circuit: name, date: race.date_start,
+      round: r.round, session_key: race.session_key, name, country: name, circuit: name, date: race.date_start,
       status: done ? "completed" : "upcoming",
       winner: winnerRow ? String(winnerRow.driver_number) : null,
     };

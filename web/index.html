@@ -445,6 +445,13 @@
             <option value="driver">Driver Focus</option>
             <option value="head_to_head">Head to Head</option>
           </select>
+          <!-- race selector — only visible for race context -->
+          <sc-if value="{{ showRaceSelector }}" hint-placeholder-val="{{ false }}">
+            <select value="{{ aiRaceSession }}" onChange="{{ onAiRaceChange }}" style="height:36px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--accent,#e10600); border-radius:8px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; cursor:pointer; outline:none;">
+              <option value="">Select a race…</option>
+              <sc-for list="{{ aiRaceOptions }}" as="r" hint-placeholder-count="9"><option value="{{ r.session_key }}">{{ r.label }}</option></sc-for>
+            </select>
+          </sc-if>
           <!-- driver selectors — only visible for driver / h2h contexts -->
           <sc-if value="{{ showDriverSelector }}" hint-placeholder-val="{{ false }}">
             <select value="{{ aiDriverA }}" onChange="{{ onAiDriverAChange }}" style="height:36px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--accent,#e10600); border-radius:8px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; cursor:pointer; outline:none;">
@@ -534,7 +541,7 @@ class Component extends DCLogic {
     h2hA:'1', h2hB:'63', h2hData:null,
     // ai analyst
     aiContext:'season', aiQuestion:'', aiLoading:false, aiAnswer:null, aiError:null, aiSources:[], aiTokens:0,
-    aiDriverA:'16', aiDriverB:'63',
+    aiDriverA:'16', aiDriverB:'63', aiRaceSession:null,
     // ui
     searchOpen:false, searchQuery:'', searchResults:[],
     exportOpen:false,
@@ -1150,27 +1157,31 @@ class Component extends DCLogic {
       // ai analyst
       aiContext:s.aiContext, aiQuestion:s.aiQuestion, aiLoading:s.aiLoading,
       aiAnswer:s.aiAnswer, aiError:s.aiError, aiSources:s.aiSources, aiTokens:s.aiTokens,
-      aiDriverA:s.aiDriverA, aiDriverB:s.aiDriverB,
+      aiDriverA:s.aiDriverA, aiDriverB:s.aiDriverB, aiRaceSession:s.aiRaceSession,
       hasAiAnswer: !!s.aiAnswer,
       hasAiError: !!s.aiError,
       showDriverSelector: s.aiContext==='driver' || s.aiContext==='head_to_head',
       showSecondDriver: s.aiContext==='head_to_head',
+      showRaceSelector: s.aiContext==='race',
       onAiContextChange:(e)=>this.setState({aiContext:e.target.value,aiAnswer:null,aiError:null}),
       onAiDriverAChange:(e)=>this.setState({aiDriverA:e.target.value,aiAnswer:null,aiError:null}),
       onAiDriverBChange:(e)=>this.setState({aiDriverB:e.target.value,aiAnswer:null,aiError:null}),
+      onAiRaceChange:(e)=>this.setState({aiRaceSession:Number(e.target.value),aiAnswer:null,aiError:null}),
       onAiQuestionChange:(e)=>this.setState({aiQuestion:e.target.value}),
       onAiKeyDown:(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this._askAI(); }},
       onAskAI:()=>this._askAI(),
+      aiRaceOptions: s.calendar.filter(r=>r.status==='completed').map(r=>({session_key:r.session_key, label:`R${r.round} · ${r.name}`})),
       aiSuggestedPrompts:[
-        {label:'Season leader', question:'Who is dominating the 2026 season and why?', ctx:'season', dA:null, dB:null},
-        {label:'British GP', question:'Why did Leclerc win the British GP?', ctx:'race', dA:null, dB:null},
-        {label:'Leclerc', question:"How consistent has Leclerc been this season?", ctx:'driver', dA:'16', dB:null},
-        {label:'ANT vs RUS', question:'Compare Antonelli and Russell this season', ctx:'head_to_head', dA:'12', dB:'63'},
+        {label:'Season leader', question:'Who is dominating the 2026 season and why?', ctx:'season', dA:null, dB:null, sk:null},
+        {label:'British GP', question:'Why did Leclerc win the British GP?', ctx:'race', dA:null, dB:null, sk: s.calendar.find(r=>r.circuit==='Silverstone')?.session_key || null},
+        {label:'Leclerc', question:"How consistent has Leclerc been this season?", ctx:'driver', dA:'16', dB:null, sk:null},
+        {label:'ANT vs RUS', question:'Compare Antonelli and Russell this season', ctx:'head_to_head', dA:'12', dB:'63', sk:null},
       ].map(p=>({ label:p.label, go:()=>{
         this.setState({
           aiQuestion:p.question, aiContext:p.ctx, aiAnswer:null, aiError:null,
           ...(p.dA ? {aiDriverA:p.dA} : {}),
           ...(p.dB ? {aiDriverB:p.dB} : {}),
+          ...(p.sk ? {aiRaceSession:p.sk} : {}),
         }, ()=>this._askAI());
       }})),
     };
