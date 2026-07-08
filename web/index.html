@@ -183,7 +183,7 @@
           <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 20px;">
             <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;">
               <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:20px; margin:0; text-transform:uppercase; letter-spacing:.02em;">Drivers' Championship</h2>
-              <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">PTS / WINS / PODIUMS</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">PTS / WINS <span style="color:var(--accent,#e10600);">(+SPR)</span> / PODIUMS</span>
             </div>
             <div>
               <sc-for list="{{ standingsRows }}" as="d" hint-placeholder-count="10">
@@ -201,7 +201,7 @@
                   </div>
                   <div style="display:flex; align-items:baseline; gap:14px; font-family:'JetBrains Mono',monospace;">
                     <span style="font-size:17px; font-weight:700;">{{ d.points }}</span>
-                    <span style="font-size:12px; color:var(--dim,#9a9aa2); width:14px; text-align:right;">{{ d.wins }}</span>
+                    <span title="{{ d.winsTitle }}" style="font-size:12px; color:var(--dim,#9a9aa2); min-width:14px; text-align:right; display:inline-flex; align-items:baseline; justify-content:flex-end; gap:3px;">{{ d.wins }}<span style="font-size:8.5px; font-weight:700; color:var(--accent,#e10600); letter-spacing:.02em;">{{ d.sprintTag }}</span></span>
                     <span style="font-size:12px; color:var(--dim,#9a9aa2); width:14px; text-align:right;">{{ d.podiums }}</span>
                   </div>
                 </div>
@@ -1076,6 +1076,8 @@ class Component extends DCLogic {
       pos:r.pos, name:fmtName(r.id), code:(api?api.DRIVERS.find(d=>d.id===r.id).code:r.id),
       team:(api?api.TEAMS.find(x=>x.id===r.team).short:''), color:fmtColor(r.id),
       points:r.points, wins:r.wins, podiums:r.podiums, barW:Math.max(2,(r.points/maxPts*100)).toFixed(1)+'%',
+      sprintTag:(r.sprintWins>0?'+'+r.sprintWins+' SPR':''),
+      winsTitle:(r.wins+' Grand Prix win'+(r.wins===1?'':'s')+(r.sprintWins>0?' + '+r.sprintWins+' sprint win'+(r.sprintWins===1?'':'s'):'')),
       posColor:r.pos===1?t.accent:t.text, go:()=>{ this._goPage('drivers'); this._selDriver(r.id); },
     }));
 

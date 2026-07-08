@@ -165,12 +165,31 @@ function ensureSeason() {
       getAllPages("/results", { year: SEASON, session_type: "Qualifying" }),
     ]);
 
-    const podiumsBy = {}, polesBy = {};
-    raceResults.forEach((r) => { if (r.position != null && r.position <= 3) podiumsBy[r.driver_number] = (podiumsBy[r.driver_number] || 0) + 1; });
-    qualiResults.forEach((r) => { if (r.position === 1) polesBy[r.driver_number] = (polesBy[r.driver_number] || 0) + 1; });
+    // Sprints are stored under session_type "Race" (session_name "Sprint") and
+    // Sprint Qualifying under "Qualifying", so counting raw results mixes them
+    // into wins/podiums/poles. Split by the actual session: wins/podiums/poles
+    // mean the Grand Prix result, and sprint wins are tracked separately so the
+    // standings can show e.g. "5 GP + 1 sprint" instead of a misleading "6".
+    const mainRaceKeys = new Set(mainRaces.map((r) => r.session_key));
+    const sprintKeys = new Set(sprints.map((r) => r.session_key));
+    const qualiKeys = new Set(qualis.map((q) => q.session_key));
+
+    const gpWinsBy = {}, sprintWinsBy = {}, podiumsBy = {}, polesBy = {};
+    raceResults.forEach((r) => {
+      if (r.position == null) return;
+      if (mainRaceKeys.has(r.session_key)) {
+        if (r.position === 1) gpWinsBy[r.driver_number] = (gpWinsBy[r.driver_number] || 0) + 1;
+        if (r.position <= 3) podiumsBy[r.driver_number] = (podiumsBy[r.driver_number] || 0) + 1;
+      } else if (sprintKeys.has(r.session_key) && r.position === 1) {
+        sprintWinsBy[r.driver_number] = (sprintWinsBy[r.driver_number] || 0) + 1;
+      }
+    });
+    qualiResults.forEach((r) => { if (qualiKeys.has(r.session_key) && r.position === 1) polesBy[r.driver_number] = (polesBy[r.driver_number] || 0) + 1; });
 
     const standingsRows = driverStandings.map((st) => ({
-      pos: st.position, id: String(st.driver_number), points: st.points, wins: st.wins,
+      pos: st.position, id: String(st.driver_number), points: st.points,
+      wins: gpWinsBy[st.driver_number] || 0,
+      sprintWins: sprintWinsBy[st.driver_number] || 0,
       podiums: podiumsBy[st.driver_number] || 0, poles: polesBy[st.driver_number] || 0, team: st.team_name,
     }));
 
