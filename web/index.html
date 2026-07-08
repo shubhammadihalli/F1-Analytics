@@ -567,9 +567,23 @@ class Component extends DCLogic {
     // load data layer + initial data
     let api;
     try {
-      api = await import('./f1-api.js');
+      // Cache-bust the import: f1-api.js has a top-level await that fetches
+      // /drivers + /constructors, so on a free-tier cold start that fetch can
+      // reject and leave the module cached in an errored state - a plain
+      // re-import would just replay the same rejection. A fresh query string
+      // forces a clean re-fetch + re-evaluation on each retry.
+      api = await import('./f1-api.js?v=' + Date.now());
     } catch(e) {
-      this.setState({ startupError: 'Failed to load API module: ' + e.message });
+      // Cold-start on free tier: the module's startup fetch failed while the
+      // backend was waking. Retry instead of dead-ending, mirroring the data
+      // path below.
+      const isStartup = e && e.message && e.message.includes('Failed to fetch');
+      if (isStartup) {
+        this.setState({ startupError: 'The backend is starting up — this takes about 30–60 seconds on first load. Retrying…' });
+        setTimeout(()=>{ this.setState({startupError:null}); this.componentDidMount(); }, 8000);
+      } else {
+        this.setState({ startupError: 'Failed to load API module: ' + e.message });
+      }
       return;
     }
     this.api = api;
