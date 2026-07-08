@@ -2,7 +2,9 @@
 
 > A production-grade Formula 1 analytics platform with real telemetry data, a live AI race analyst, and an interactive ECharts dashboard. Built end-to-end: data engineering → REST API → frontend → AI integration.
 
-**[Live Dashboard](https://shubhammadihalli.github.io/F1-Analytics/)** &nbsp;·&nbsp; **[API Docs](https://f1-analytics-api.onrender.com/docs)**
+**[Live Dashboard](https://f1-analytics-api-d7pc.onrender.com/)** &nbsp;·&nbsp; **[API Docs](https://f1-analytics-api-d7pc.onrender.com/docs)**
+
+> ⚠️ The backend runs on Render's free tier and sleeps after ~15 min idle — the first request may take 30–60s to wake it. The dashboard shows a "starting up" banner and loads automatically once it's ready.
 
 ---
 
@@ -23,12 +25,12 @@ The AI fetches real race data from the database at request time — lap times, t
 
 | Layer | Technology |
 |---|---|
-| **Data ingestion** | Python 3.12, httpx (async), Tenacity (retry + backoff), Pandas |
+| **Data ingestion** | Python 3.11, httpx (async), Tenacity (retry + backoff), Pandas |
 | **Database** | PostgreSQL, SQLAlchemy 2.0 ORM, Alembic migrations |
 | **API** | FastAPI, Pydantic v2, in-process TTL cache, Uvicorn |
 | **AI** | Groq API · Llama 3.3 70B · RAG pattern · structured context injection |
 | **Frontend** | Vanilla JS, ECharts 5.5, React 18 (runtime), Google Fonts |
-| **Deployment** | GitHub Pages (frontend) + Render free tier (backend + Postgres) |
+| **Deployment** | Docker on Render free tier — one service serves the dashboard + API + Postgres |
 | **Testing** | pytest · 74 tests across backend + API clients |
 | **Tooling** | Ruff · mypy · pyproject.toml |
 
@@ -36,19 +38,24 @@ The AI fetches real race data from the database at request time — lap times, t
 
 ## Architecture
 
+One Render service (Docker) serves the dashboard and the API from the same
+origin — the browser fetches `/api/v1/*` relative to the page it's on, so
+there's no separate frontend host and no cross-origin config.
+
 ```
-GitHub Pages                      Render (Oregon)
-┌─────────────────────┐           ┌──────────────────────────────┐
-│  index.html         │  HTTPS    │  FastAPI + Uvicorn           │
-│  f1-api.js  ────────┼──GET/POST▶│  /api/v1/*  (15 endpoints)  │
-│  support.js         │           │  /ai/analyze (Groq RAG)      │
-│  (ECharts, React)   │           │  StaticFiles at /            │
-└─────────────────────┘           └──────────────┬───────────────┘
-        │                                         │ psycopg3
-        └── CDN: unpkg, jsdelivr,        PostgreSQL (Render)
-                 Google Fonts                     │
-                                       ETL: python etl.py
-                                       (OpenF1 → Postgres, incremental)
+Browser                    Render (Oregon) — single Docker service
+┌─────────────────┐        ┌──────────────────────────────────────┐
+│  index.html     │ HTTPS  │  FastAPI + Uvicorn                    │
+│  f1-api.js  ────┼─GET/──▶│  StaticFiles at /   (serves the web/  │
+│  support.js     │  POST  │                      dashboard)       │
+│  (ECharts,React)│◀───────┤  /api/v1/*   (15 endpoints)           │
+└─────────────────┘        │  /api/v1/ai/analyze  (Groq RAG)       │
+        │                  └──────────────────┬───────────────────┘
+        └── CDN: unpkg,                        │ psycopg3
+            jsdelivr, Google Fonts    PostgreSQL (Render, free tier)
+                                               ▲
+                                     ETL: python etl.py
+                                     (OpenF1 → Postgres, incremental)
 ```
 
 ---
@@ -121,6 +128,8 @@ OpenF1 Public API ──async httpx──▶ ETL Pipelines ──SQLAlchemy─�
 
 The ETL is **incremental and idempotent** — re-running skips already-ingested sessions and only fetches new data from OpenF1.
 
+> **Note on the live demo:** telemetry is ~380 MB *per session*, which exceeds Render's free 1 GB Postgres. The hosted instance loads the full core dataset (drivers, sessions, results, laps, stints, pit stops, standings, weather) but **skips telemetry**, so the Telemetry tab is empty there. A local Postgres has no such limit — `python etl.py` loads everything, telemetry included.
+
 ---
 
 ## API Endpoints
@@ -150,13 +159,13 @@ Full interactive docs at `/docs` (Swagger UI).
 
 ## Run Locally
 
-**Prerequisites:** Python 3.12+, PostgreSQL running locally
+**Prerequisites:** Python 3.11+, PostgreSQL running locally
 
 ```bash
 # 1. Clone and install
 git clone https://github.com/shubhammadihalli/F1-Analytics.git
 cd F1-Analytics
-python3.12 -m venv .venv && source .venv/bin/activate
+python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r requirements/backend.txt -r requirements/etl.txt
 
 # 2. Configure
@@ -175,6 +184,22 @@ PYTHONPATH=. uvicorn backend.main:app --port 8000
 ```
 
 Open **http://localhost:8000** — API and dashboard in a single process.
+
+---
+
+## Deploy to Render
+
+Deployment is driven by [`render.yaml`](render.yaml) (a Render Blueprint) and the [`Dockerfile`](Dockerfile), which pins **Python 3.11-slim** so every dependency installs from a prebuilt wheel (no Rust build for `pydantic-core`).
+
+1. Push to GitHub, then in Render: **New → Blueprint** and point it at the repo.
+2. Render reads `render.yaml`, provisions the Postgres database + the Docker web service, and runs `alembic upgrade head` on start.
+3. Set `GROQ_API_KEY` in the service's **Environment** tab (it's `sync: false`, so it's the only value you enter by hand).
+4. Load data by running the ETL against the database's **External Database URL**:
+   ```bash
+   DATABASE_URL="<external-db-url>" PYTHONPATH=. python etl.py --year 2026
+   ```
+
+> The web service **must** be created as a Docker runtime (via the Blueprint). A native-Python service ignores the Dockerfile and picks its own Python version, which breaks the `pydantic-core` install.
 
 ---
 
@@ -198,10 +223,10 @@ F1-Analytics/
 ├── models/                14 SQLAlchemy ORM models
 ├── web/                   static frontend (served by FastAPI at /)
 │   ├── index.html         ECharts dashboard + AI Analyst UI
-│   ├── f1-api.js          data layer — fetch() calls to /api/v1
-│   └── support.js         Claude Design runtime (React 18, Babel)
-├── render.yaml            Render Blueprint (Postgres + web service)
-├── .github/workflows/     GitHub Actions Pages deploy
+│   ├── f1-api.js          data layer — fetch() calls to /api/v1 (same origin)
+│   └── support.js         component runtime (React 18)
+├── Dockerfile             builds the deploy image (Python 3.11-slim)
+├── render.yaml            Render Blueprint (Docker web service + Postgres)
 └── etl.py                 root shim — python etl.py
 ```
 
