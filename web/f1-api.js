@@ -676,3 +676,21 @@ export async function analyzeAI({ question, contextType = "season", raceSessionK
   }
   return r.json();
 }
+
+/**
+ * Agentic AI Analyst. The model is given tools and autonomously decides which
+ * F1 data to fetch — no pre-selected context. Returns the answer plus the
+ * trace of tool calls it made (tool, arguments, result_preview).
+ */
+export async function analyzeAgent({ question, year = SEASON }) {
+  const r = await fetch(`${BASE}/ai/agent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, year }),
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${r.status}`);
+  }
+  return r.json();
+}
