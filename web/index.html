@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>
-  var _h = location.hostname;
-  window.F1_API_BASE = (_h === "localhost" || _h === "127.0.0.1")
-    ? "/api/v1"
-    : "https://f1-analytics-api.onrender.com/api/v1";
+  // The dashboard is served by the same FastAPI process as the API, so the
+  // API is always same-origin. A relative base works on any host (local dev,
+  // the Render service, or a renamed service) without hardcoding a URL that
+  // breaks the moment the service is renamed or recreated.
+  window.F1_API_BASE = "/api/v1";
 </script>
 <script src="./support.js"></script>
 </head>
