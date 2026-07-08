@@ -123,6 +123,22 @@
       </div>
     </sc-if>
 
+    <!-- ---------- INITIAL LOADING OVERLAY ---------- -->
+    <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed; top:60px; left:0; right:0; bottom:0; z-index:40; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; background:var(--bg,#0a0a0b); animation:f1fade .2s ease;">
+        <div style="width:52px; height:52px; border-radius:50%; border:3px solid var(--border,#29292e); border-top-color:var(--accent,#e10600); animation:f1spin .8s linear infinite;"></div>
+        <div style="text-align:center;">
+          <div style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:19px; letter-spacing:.02em; color:var(--text,#f4f4f3);">Loading race data</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint,#6a6a72); margin-top:8px;">Fetching standings · results · laps</div>
+        </div>
+        <div style="display:flex; gap:7px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--accent,#e10600);animation:f1pulse 1s ease-in-out infinite;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--accent,#e10600);animation:f1pulse 1s ease-in-out .15s infinite;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--accent,#e10600);animation:f1pulse 1s ease-in-out .3s infinite;"></span>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- ---------- OVERVIEW ---------- -->
     <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
       <div data-screen-label="Overview">
@@ -1110,6 +1126,10 @@ class Component extends DCLogic {
     return {
       themeVars,
       startupError: s.startupError || null,
+      // Initial data still in flight and no cold-start error to show: cover
+      // the (otherwise empty) dashboard with a loading state so it doesn't
+      // look broken for the first second or two.
+      isLoading: !s.ready && !s.startupError,
       seasonLabel: s.meta?String(s.meta.season):String(new Date().getFullYear()),
       completedLabel: s.meta?(s.meta.completed+' of '+s.meta.totalRounds+' rounds complete'):'',
       lastUpdated: s.lastUpdated,
