@@ -434,36 +434,14 @@
         <div style="margin-bottom:20px;">
           <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em; color:var(--accent,#e10600); text-transform:uppercase;">AI Analyst</div>
           <h1 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:46px; line-height:.95; margin:6px 0 0; letter-spacing:-.01em;">ApexGrid AI</h1>
-          <p style="font-size:13px; color:var(--dim,#9a9aa2); margin-top:6px;">Ask anything about the 2026 season — powered by Llama 3.3 70B via Groq, grounded in real race data.</p>
+          <p style="font-size:13px; color:var(--dim,#9a9aa2); margin-top:6px;">Ask anything about the 2026 season — an autonomous <strong style="color:var(--text,#f4f4f3);">AI agent</strong> that picks its own tools, fetches real race data, and reasons over it. Powered by Llama 3.3 70B via Groq.</p>
         </div>
 
-        <!-- context selector + suggested prompts -->
+        <!-- agent mode indicator + suggested prompts -->
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
-          <select value="{{ aiContext }}" onChange="{{ onAiContextChange }}" style="height:36px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:8px; color:var(--text,#f4f4f3); font-family:'Archivo',sans-serif; font-size:13px; cursor:pointer; outline:none;">
-            <option value="season">Season Overview</option>
-            <option value="race">Race Analysis</option>
-            <option value="driver">Driver Focus</option>
-            <option value="head_to_head">Head to Head</option>
-          </select>
-          <!-- race selector — only visible for race context -->
-          <sc-if value="{{ showRaceSelector }}" hint-placeholder-val="{{ false }}">
-            <select value="{{ aiRaceSession }}" onChange="{{ onAiRaceChange }}" style="height:36px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--accent,#e10600); border-radius:8px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; cursor:pointer; outline:none;">
-              <option value="">Select a race…</option>
-              <sc-for list="{{ aiRaceOptions }}" as="r" hint-placeholder-count="9"><option value="{{ r.session_key }}">{{ r.label }}</option></sc-for>
-            </select>
-          </sc-if>
-          <!-- driver selectors — only visible for driver / h2h contexts -->
-          <sc-if value="{{ showDriverSelector }}" hint-placeholder-val="{{ false }}">
-            <select value="{{ aiDriverA }}" onChange="{{ onAiDriverAChange }}" style="height:36px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--accent,#e10600); border-radius:8px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; cursor:pointer; outline:none;">
-              <sc-for list="{{ driverOptions }}" as="o" hint-placeholder-count="20"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
-            </select>
-            <sc-if value="{{ showSecondDriver }}" hint-placeholder-val="{{ false }}">
-              <span style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:14px; color:var(--faint,#6a6a72);">VS</span>
-              <select value="{{ aiDriverB }}" onChange="{{ onAiDriverBChange }}" style="height:36px; padding:0 12px; background:var(--surface,#141416); border:1px solid #1E88E5; border-radius:8px; color:var(--text,#f4f4f3); font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; cursor:pointer; outline:none;">
-                <sc-for list="{{ driverOptions }}" as="o" hint-placeholder-count="20"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
-              </select>
-            </sc-if>
-          </sc-if>
+          <span style="display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 14px; background:rgba(225,6,0,0.08); border:1px solid rgba(225,6,0,0.3); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent,#e10600);">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--accent,#e10600);"></span>Agentic · 6 tools
+          </span>
           <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">Quick prompts:</span>
           <sc-for list="{{ aiSuggestedPrompts }}" as="p" hint-placeholder-count="4">
             <button onClick="{{ p.go }}" style="height:30px; padding:0 12px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:6px; color:var(--dim,#9a9aa2); font-family:'JetBrains Mono',monospace; font-size:11px; cursor:pointer; white-space:nowrap;" onmouseover="this.style.borderColor='var(--accent,#e10600)';this.style.color='var(--text,#f4f4f3)'" onmouseout="this.style.borderColor='var(--border,#29292e)';this.style.color='var(--dim,#9a9aa2)'">{{ p.label }}</button>
@@ -498,6 +476,25 @@
           </div>
         </sc-if>
 
+        <!-- reasoning trace — the agent's autonomous tool calls -->
+        <sc-if value="{{ hasToolCalls }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:14px; padding:18px 22px; margin-bottom:16px; animation:f1fade .4s ease;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+              <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent,#e10600);">Agent Reasoning</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">{{ aiIterations }} steps · {{ aiToolCount }} tool calls</span>
+            </div>
+            <sc-for list="{{ aiToolCalls }}" as="tc" hint-placeholder-count="3">
+              <div style="display:flex; gap:12px; padding:8px 0; border-top:1px solid var(--border,#29292e);">
+                <span style="flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:var(--accent,#e10600);">{{ tc.step }}</span>
+                <div style="min-width:0; flex:1;">
+                  <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text,#f4f4f3);">🔧 {{ tc.call }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">↳ {{ tc.preview }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
         <!-- answer -->
         <sc-if value="{{ hasAiAnswer }}" hint-placeholder-val="{{ false }}">
           <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:14px; padding:24px 28px; animation:f1fade .4s ease;">
@@ -505,7 +502,7 @@
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
               <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.16em; text-transform:uppercase; padding:4px 10px; background:rgba(225,6,0,0.12); border:1px solid rgba(225,6,0,0.3); border-radius:4px; color:var(--accent,#e10600);">APEX AI</span>
               <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">llama-3.3-70b · {{ aiTokens }} tokens</span>
-              <span style="margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">grounded in: {{ aiSources }}</span>
+              <span style="margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">agentic · {{ aiToolCount }} tools used</span>
             </div>
             <!-- answer text -->
             <div style="font-size:15px; line-height:1.75; color:var(--text,#f4f4f3); white-space:pre-wrap; font-family:'Archivo',sans-serif;">{{ aiAnswer }}</div>
@@ -539,9 +536,9 @@ class Component extends DCLogic {
     selectedRound:1, raceData:null,
     telA:'1', telB:'63', compareOn:false, telDataA:null, telDataB:null,
     h2hA:'1', h2hB:'63', h2hData:null,
-    // ai analyst
-    aiContext:'season', aiQuestion:'', aiLoading:false, aiAnswer:null, aiError:null, aiSources:[], aiTokens:0,
-    aiDriverA:'16', aiDriverB:'63', aiRaceSession:null,
+    // ai analyst (agentic)
+    aiQuestion:'', aiLoading:false, aiAnswer:null, aiError:null, aiTokens:0,
+    aiToolCalls:[], aiIterations:0,
     // ui
     searchOpen:false, searchQuery:'', searchResults:[],
     exportOpen:false,
@@ -1154,35 +1151,28 @@ class Component extends DCLogic {
       onH2HAChange:(e)=>this._selH2H(e.target.value, s.h2hB),
       onH2HBChange:(e)=>this._selH2H(s.h2hA, e.target.value),
       swapH2H:()=>this._selH2H(s.h2hB, s.h2hA),
-      // ai analyst
-      aiContext:s.aiContext, aiQuestion:s.aiQuestion, aiLoading:s.aiLoading,
-      aiAnswer:s.aiAnswer, aiError:s.aiError, aiSources:s.aiSources, aiTokens:s.aiTokens,
-      aiDriverA:s.aiDriverA, aiDriverB:s.aiDriverB, aiRaceSession:s.aiRaceSession,
+      // ai analyst (agentic)
+      aiQuestion:s.aiQuestion, aiLoading:s.aiLoading,
+      aiAnswer:s.aiAnswer, aiError:s.aiError, aiTokens:s.aiTokens,
+      aiIterations:s.aiIterations, aiToolCount:s.aiToolCalls.length,
       hasAiAnswer: !!s.aiAnswer,
       hasAiError: !!s.aiError,
-      showDriverSelector: s.aiContext==='driver' || s.aiContext==='head_to_head',
-      showSecondDriver: s.aiContext==='head_to_head',
-      showRaceSelector: s.aiContext==='race',
-      onAiContextChange:(e)=>this.setState({aiContext:e.target.value,aiAnswer:null,aiError:null}),
-      onAiDriverAChange:(e)=>this.setState({aiDriverA:e.target.value,aiAnswer:null,aiError:null}),
-      onAiDriverBChange:(e)=>this.setState({aiDriverB:e.target.value,aiAnswer:null,aiError:null}),
-      onAiRaceChange:(e)=>this.setState({aiRaceSession:Number(e.target.value),aiAnswer:null,aiError:null}),
+      hasToolCalls: s.aiToolCalls.length>0,
+      aiToolCalls: s.aiToolCalls.map((tc,i)=>({
+        step:`0${i+1}`.slice(-2),
+        call:`${tc.tool}(${Object.entries(tc.arguments||{}).map(([k,v])=>`${k}=${v}`).join(', ')})`,
+        preview: tc.result_preview,
+      })),
       onAiQuestionChange:(e)=>this.setState({aiQuestion:e.target.value}),
       onAiKeyDown:(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this._askAI(); }},
       onAskAI:()=>this._askAI(),
-      aiRaceOptions: s.calendar.filter(r=>r.status==='completed').map(r=>({session_key:r.session_key, label:`R${r.round} · ${r.name}`})),
       aiSuggestedPrompts:[
-        {label:'Season leader', question:'Who is dominating the 2026 season and why?', ctx:'season', dA:null, dB:null, sk:null},
-        {label:'British GP', question:'Why did Leclerc win the British GP?', ctx:'race', dA:null, dB:null, sk: s.calendar.find(r=>r.circuit==='Silverstone')?.session_key || null},
-        {label:'Leclerc', question:"How consistent has Leclerc been this season?", ctx:'driver', dA:'16', dB:null, sk:null},
-        {label:'ANT vs RUS', question:'Compare Antonelli and Russell this season', ctx:'head_to_head', dA:'12', dB:'63', sk:null},
+        {label:'Season leader', question:'Who is dominating the 2026 season and why?'},
+        {label:'British GP', question:'Why did Leclerc win the British GP?'},
+        {label:'Leclerc form', question:'How consistent has Leclerc been this season?'},
+        {label:'ANT vs RUS', question:'Compare Antonelli and Russell this season'},
       ].map(p=>({ label:p.label, go:()=>{
-        this.setState({
-          aiQuestion:p.question, aiContext:p.ctx, aiAnswer:null, aiError:null,
-          ...(p.dA ? {aiDriverA:p.dA} : {}),
-          ...(p.dB ? {aiDriverB:p.dB} : {}),
-          ...(p.sk ? {aiRaceSession:p.sk} : {}),
-        }, ()=>this._askAI());
+        this.setState({ aiQuestion:p.question, aiAnswer:null, aiError:null, aiToolCalls:[] }, ()=>this._askAI());
       }})),
     };
   }
@@ -1205,16 +1195,16 @@ class Component extends DCLogic {
   async _askAI(){
     const s = this.state;
     if(!s.aiQuestion.trim() || s.aiLoading || !this.api) return;
-    this.setState({aiLoading:true, aiAnswer:null, aiError:null});
+    this.setState({aiLoading:true, aiAnswer:null, aiError:null, aiToolCalls:[], aiIterations:0});
     try {
-      const res = await this.api.analyzeAI({
-        question: s.aiQuestion, contextType: s.aiContext,
-        raceSessionKey: s.aiContext==='race' ? this.state.aiRaceSession : undefined,
-        driverNumber: (s.aiContext==='driver'||s.aiContext==='head_to_head') ? s.aiDriverA : undefined,
-        driverNumberB: s.aiContext==='head_to_head' ? s.aiDriverB : undefined,
-        year: 2026,
+      const res = await this.api.analyzeAgent({ question: s.aiQuestion, year: 2026 });
+      this.setState({
+        aiAnswer: res.answer,
+        aiToolCalls: res.tool_calls || [],
+        aiIterations: res.iterations || 0,
+        aiTokens: res.tokens_used,
+        aiLoading:false,
       });
-      this.setState({aiAnswer: res.answer, aiSources: res.data_sources, aiTokens: res.tokens_used, aiLoading:false});
     } catch(e) {
       this.setState({aiError: e.message || 'AI request failed', aiLoading:false});
     }
