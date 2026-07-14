@@ -142,6 +142,28 @@
     <!-- ---------- OVERVIEW ---------- -->
     <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
       <div data-screen-label="Overview">
+
+        <!-- new-to-f1 banner -->
+        <sc-if value="{{ showBasicsBanner }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative; display:flex; align-items:center; gap:14px; margin-bottom:18px; padding:13px 14px 13px 18px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; overflow:hidden;">
+            <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent,#e10600);"></div>
+            <div onClick="{{ goBasics }}" style="display:flex; align-items:center; gap:16px; flex:1; min-width:0; cursor:pointer;">
+              <div style="width:42px; height:42px; flex-shrink:0; border-radius:10px; background:var(--surface2,#1d1d20); border:1px solid var(--accent,#e10600); display:flex; align-items:center; justify-content:center;">
+                <span style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:24px; line-height:1; color:var(--accent,#e10600);">?</span>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:9px;">
+                  <span style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:19px; line-height:1; text-transform:uppercase; letter-spacing:.01em;">New to F1?</span>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent,#e10600); padding:3px 6px; background:var(--surface2,#1d1d20); border-radius:5px;">Rookie Guide</span>
+                </div>
+                <div style="font-size:13px; color:var(--dim,#9a9aa2); margin-top:4px;">Learn how a race weekend works — points, tyres, flags and the jargon, in a few minutes.</div>
+              </div>
+              <span style="flex-shrink:0; font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.03em; color:#fff; background:var(--accent,#e10600); padding:9px 15px; border-radius:8px; white-space:nowrap;">Start here →</span>
+            </div>
+            <button onClick="{{ dismissBasicsBanner }}" title="Dismiss" style="flex-shrink:0; width:30px; height:30px; display:flex; align-items:center; justify-content:center; background:transparent; border:1px solid var(--border,#29292e); border-radius:7px; color:var(--dim,#9a9aa2); font-size:16px; line-height:1; cursor:pointer;">×</button>
+          </div>
+        </sc-if>
+
         <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
           <div>
             <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em; color:var(--accent,#e10600); text-transform:uppercase;">Season Overview</div>
@@ -540,6 +562,171 @@
       </div>
     </sc-if>
 
+    <!-- ---------- NEW TO F1 (BASICS) ---------- -->
+    <sc-if value="{{ isBasics }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Basics">
+
+        <!-- hero -->
+        <div style="position:relative; overflow:hidden; border:1px solid var(--border,#29292e); border-radius:14px; background:var(--surface,#141416); padding:34px 34px 30px; margin-bottom:22px;">
+          <div style="position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--accent,#e10600);"></div>
+          <div style="position:absolute; right:-40px; top:-60px; font-family:'Saira Condensed',sans-serif; font-weight:900; font-size:240px; line-height:1; color:var(--surface2,#1d1d20); user-select:none; pointer-events:none;">F1</div>
+          <div style="position:relative;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em; color:var(--accent,#e10600); text-transform:uppercase;">Rookie Guide</div>
+            <h1 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:60px; line-height:.92; margin:8px 0 0; letter-spacing:-.01em; max-width:760px;">The Basics of Formula 1</h1>
+            <p style="font-size:15px; line-height:1.65; color:var(--dim,#9a9aa2); max-width:640px; margin:14px 0 0;">Here is everything a first-time viewer needs to follow the fastest sport on the planet — the weekend format, how points are scored, the flags, the tyres, and the jargon.</p>
+          </div>
+        </div>
+
+        <!-- key numbers -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-bottom:26px;">
+          <sc-for list="{{ basicsNumbers }}" as="n" hint-placeholder-count="5">
+            <div style="position:relative; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:16px 16px 15px; overflow:hidden;">
+              <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent,#e10600);"></div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint,#6a6a72);">{{ n.label }}</div>
+              <div style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:34px; line-height:1; margin-top:9px;">{{ n.value }}</div>
+              <div style="font-size:12px; color:var(--dim,#9a9aa2); margin-top:6px;">{{ n.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- race weekend -->
+        <div style="margin-bottom:26px;">
+          <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:14px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:24px; margin:0; text-transform:uppercase; letter-spacing:.02em;">The Race Weekend</h2>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">FRI → SUN</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px;">
+            <sc-for list="{{ basicsWeekend }}" as="w" hint-placeholder-count="4">
+              <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:18px 18px 16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent,#e10600);">{{ w.day }}</span>
+                  <span style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:22px; color:var(--surface2,#2a2a30);">{{ w.no }}</span>
+                </div>
+                <div style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:20px; margin-top:8px; text-transform:uppercase;">{{ w.title }}</div>
+                <p style="font-size:13px; line-height:1.6; color:var(--dim,#9a9aa2); margin:8px 0 0;">{{ w.body }}</p>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- points + qualifying -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:26px;">
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:20px 22px;">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px;">
+              <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:22px; margin:0; text-transform:uppercase;">How Points Work</h2>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">TOP 10 SCORE</span>
+            </div>
+            <p style="font-size:13px; line-height:1.6; color:var(--dim,#9a9aa2); margin:0 0 14px;">Only the top ten finishers earn points on a Grand Prix Sunday. Win races, finish consistently, and the points add up across the season.</p>
+            <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px;">
+              <sc-for list="{{ basicsPoints }}" as="p" hint-placeholder-count="10">
+                <div style="background:var(--surface2,#1d1d20); border:1px solid var(--border,#29292e); border-radius:8px; padding:10px 8px; text-align:center;">
+                  <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">P{{ p.pos }}</div>
+                  <div style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:26px; line-height:1; margin-top:4px; color:{{ p.color }};">{{ p.pts }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; margin-top:14px; padding:10px 12px; background:var(--surface2,#1d1d20); border-radius:8px;">
+              <span style="width:9px; height:9px; border-radius:50%; background:#a020f0; flex-shrink:0;"></span>
+              <span style="font-size:13px; color:var(--text,#f4f4f3);">On <b>sprint weekends</b> a shorter Saturday race pays extra points to the top eight, from 8 down to 1.</span>
+            </div>
+          </div>
+
+          <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:20px 22px;">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px;">
+              <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:22px; margin:0; text-transform:uppercase;">Qualifying</h2>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">KNOCKOUT</span>
+            </div>
+            <p style="font-size:13px; line-height:1.6; color:var(--dim,#9a9aa2); margin:0 0 14px;">Saturday sets the starting order. Three timed segments progressively knock out the slowest cars until the fastest ten fight for pole position.</p>
+            <sc-for list="{{ basicsQuali }}" as="q" hint-placeholder-count="3">
+              <div style="display:grid; grid-template-columns:56px 1fr; align-items:center; gap:14px; padding:12px 0; border-top:1px solid var(--border,#29292e);">
+                <div style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:26px; color:var(--accent,#e10600);">{{ q.seg }}</div>
+                <div>
+                  <div style="font-weight:700; font-size:14px;">{{ q.title }}</div>
+                  <div style="font-size:12.5px; color:var(--dim,#9a9aa2); margin-top:2px;">{{ q.body }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- tyres -->
+        <div style="margin-bottom:26px;">
+          <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:14px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:24px; margin:0; text-transform:uppercase; letter-spacing:.02em;">Tyres</h2>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">GRIP VS DURABILITY</span>
+          </div>
+          <p style="font-size:13px; line-height:1.6; color:var(--dim,#9a9aa2); max-width:760px; margin:0 0 14px;">Softer tyres are faster but wear out sooner; harder tyres last longer but are slower. In a dry race every driver must use at least two different slick compounds — which forces a pit stop and creates strategy.</p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px;">
+            <sc-for list="{{ basicsTyres }}" as="ty" hint-placeholder-count="5">
+              <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:16px; display:flex; flex-direction:column; align-items:center; text-align:center;">
+                <div style="width:48px; height:48px; border-radius:50%; border:5px solid {{ ty.color }}; background:var(--surface2,#1d1d20); display:flex; align-items:center; justify-content:center;">
+                  <span style="width:16px; height:16px; border-radius:50%; background:var(--bg,#0a0a0b);"></span>
+                </div>
+                <div style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:17px; margin-top:10px; text-transform:uppercase;">{{ ty.name }}</div>
+                <div style="font-size:12px; color:var(--dim,#9a9aa2); margin-top:3px;">{{ ty.body }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- flags -->
+        <div style="margin-bottom:26px;">
+          <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:14px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:24px; margin:0; text-transform:uppercase; letter-spacing:.02em;">Flags</h2>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">TRACKSIDE SIGNALS</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px;">
+            <sc-for list="{{ basicsFlags }}" as="fl" hint-placeholder-count="6">
+              <div style="display:flex; align-items:center; gap:14px; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:14px 16px;">
+                <div style="width:34px; height:24px; border-radius:3px; flex-shrink:0; background:{{ fl.color }}; border:1px solid rgba(255,255,255,.12);"></div>
+                <div>
+                  <div style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:16px; text-transform:uppercase;">{{ fl.name }}</div>
+                  <div style="font-size:12.5px; color:var(--dim,#9a9aa2); margin-top:1px;">{{ fl.body }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- jargon -->
+        <div style="margin-bottom:26px;">
+          <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:14px;">
+            <h2 style="font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:24px; margin:0; text-transform:uppercase; letter-spacing:.02em;">Speak the Language</h2>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint,#6a6a72);">GLOSSARY</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;">
+            <sc-for list="{{ basicsJargon }}" as="j" hint-placeholder-count="6">
+              <div style="background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:16px 18px;">
+                <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent,#e10600);">{{ j.term }}</div>
+                <p style="font-size:13px; line-height:1.6; color:var(--dim,#9a9aa2); margin:8px 0 0;">{{ j.body }}</p>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- championships -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:26px;">
+          <div style="position:relative; overflow:hidden; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:22px 24px;">
+            <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent,#e10600);"></div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint,#6a6a72);">Title #1</div>
+            <h3 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:26px; margin:8px 0 0; text-transform:uppercase;">Drivers' Championship</h3>
+            <p style="font-size:13.5px; line-height:1.65; color:var(--dim,#9a9aa2); margin:10px 0 0;">Every driver's points across all races are added up. The one with the most at season's end is the World Champion. It rewards individual consistency, race pace and racecraft.</p>
+          </div>
+          <div style="position:relative; overflow:hidden; background:var(--surface,#141416); border:1px solid var(--border,#29292e); border-radius:12px; padding:22px 24px;">
+            <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:#00d2be;"></div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint,#6a6a72);">Title #2</div>
+            <h3 style="font-family:'Saira Condensed',sans-serif; font-weight:800; font-size:26px; margin:8px 0 0; text-transform:uppercase;">Constructors' Championship</h3>
+            <p style="font-size:13.5px; line-height:1.65; color:var(--dim,#9a9aa2); margin:10px 0 0;">Each team's two drivers combine their points. This crowns the best <b>team</b> — car, engineers, strategy and pit crew — and determines how prize money is shared out.</p>
+          </div>
+        </div>
+
+        <!-- back to dashboard -->
+        <div style="display:flex; justify-content:center;">
+          <button onClick="{{ goOverview }}" style="height:44px; padding:0 22px; background:var(--accent,#e10600); border:none; border-radius:8px; color:#fff; font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:.03em; text-transform:uppercase; cursor:pointer;">Ready? Explore the live season →</button>
+        </div>
+      </div>
+    </sc-if>
+
   </main>
 </div>
 
@@ -565,6 +752,7 @@ class Component extends DCLogic {
     favorites:[],
     refresh:0, lastUpdated:'—',
     startupError: null,
+    basicsBannerDismissed:false,
   };
 
   // ---------- lifecycle ----------
@@ -573,6 +761,7 @@ class Component extends DCLogic {
     try{
       const t = localStorage.getItem('f1.theme'); if(t) this.setState({theme:t});
       const f = JSON.parse(localStorage.getItem('f1.favorites')||'[]'); if(Array.isArray(f)) this.setState({favorites:f});
+      if(localStorage.getItem('f1.basicsBannerDismissed')==='1') this.setState({basicsBannerDismissed:true});
     }catch(e){}
     // key handlers
     this._key = (e)=>{
@@ -1050,7 +1239,7 @@ class Component extends DCLogic {
   renderVals(){
     const s=this.state; const api=this.api; const t=this.tk();
     const themeVars = `--bg:${t.bg};--surface:${t.surface};--surface2:${t.surface2};--border:${t.border};--text:${t.text};--dim:${t.dim};--faint:${t.faint};--accent:${t.accent};`;
-    const pageList=[['overview','Overview'],['drivers','Drivers'],['races','Races'],['telemetry','Telemetry'],['h2h','Head to Head'],['ai','AI Analyst']];
+    const pageList=[['overview','Overview'],['drivers','Drivers'],['races','Races'],['telemetry','Telemetry'],['h2h','Head to Head'],['ai','AI Analyst'],['basics','New to F1?']];
     const tabs=pageList.map(([id,label])=>{
       const active=s.page===id;
       const style=`display:flex; align-items:center; white-space:nowrap; padding:0 14px; height:100%; background:transparent; border:none; border-bottom:2px solid ${active?t.accent:'transparent'}; color:${active?t.text:t.dim}; font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:.02em; text-transform:uppercase; cursor:pointer;`;
@@ -1128,13 +1317,58 @@ class Component extends DCLogic {
 
     const isFavCur=s.favorites.includes(s.selectedDriver);
 
+    // new-to-f1 basics content (counts follow the live data where available)
+    const basicsNumbers=[
+      {label:'Teams', value:String(api?api.TEAMS.length:10), sub:'Each fields two cars'},
+      {label:'Drivers', value:String(api?api.TEAMS.length*2:20), sub:'Two per team, the world’s best'},
+      {label:'Races', value:String(s.meta?s.meta.totalRounds:24), sub:'Across five continents'},
+      {label:'Points for a win', value:'25', sub:'Most points takes the title'},
+      {label:'Pit stop', value:'~2.5s', sub:'Four tyres, twenty hands'},
+    ];
+    const basicsWeekend=[
+      {day:'Friday', no:'01', title:'Practice', body:'Free practice sessions. Teams learn the track, tune the car setup and gather tyre data. No points, no pressure — just laps.'},
+      {day:'Saturday', no:'02', title:'Qualifying', body:'A knockout time-trial that decides Sunday’s starting grid. The fastest single lap wins pole position — the front spot on the grid.'},
+      {day:'Sunday', no:'03', title:'The Grand Prix', body:'The main event: roughly 300 km of racing, around 90 minutes. First across the line wins, and the top ten score championship points.'},
+      {day:'Select weekends', no:'04', title:'Sprint', body:'A handful of weekends add a short Saturday race — about a third of full distance — with its own quick qualifying and bonus points for the top eight.'},
+    ];
+    const basicsPoints=[25,18,15,12,10,8,6,4,2,1].map((pts,i)=>({ pos:i+1, pts, color:i===0?t.accent:t.text }));
+    const basicsQuali=[
+      {seg:'Q1', title:'Everyone runs', body:'18 minutes. All cars set times; the slowest are knocked out and fill the back of the grid.'},
+      {seg:'Q2', title:'The field is trimmed', body:'15 minutes. The survivors go again and the midfield is cut down to the ten fastest cars.'},
+      {seg:'Q3', title:'Pole shootout', body:'12 minutes. The top ten fight for pole position — the prime spot at the front of the grid.'},
+    ];
+    const basicsTyres=[
+      {name:'Soft', color:'#e10600', body:'Fastest grip, shortest life'},
+      {name:'Medium', color:'#ffdc00', body:'The balanced all-rounder'},
+      {name:'Hard', color:(s.theme==='light'?'#8d8d94':'#e8e8e8'), body:'Slowest but lasts longest'},
+      {name:'Intermediate', color:'#3fbf3f', body:'For a damp or drying track'},
+      {name:'Wet', color:'#2f6fd0', body:'Heavy rain, full treads'},
+    ];
+    const basicsFlags=[
+      {name:'Green', color:'#2fae4a', body:'Track clear — full racing speed'},
+      {name:'Yellow', color:'#ffdc00', body:'Danger ahead — slow down, no overtaking'},
+      {name:'Red', color:'#e10600', body:'Session stopped — everyone returns to the pits'},
+      {name:'Blue', color:'#2f6fd0', body:'A faster car is lapping you — let it through'},
+      {name:'Black & White', color:'linear-gradient(135deg,#111 50%,#eee 50%)', body:'Warning for unsporting driving — one strike'},
+      {name:'Chequered', color:'repeating-conic-gradient(#111 0% 25%, #eee 0% 50%) 0 0/12px 12px', body:'The race is over as you cross the line'},
+    ];
+    const basicsJargon=[
+      {term:'Pole Position', body:'First place on the starting grid, earned by the fastest qualifying lap. The best launch pad for winning the race.'},
+      {term:'Box', body:'Radio call telling a driver to pit. A stop for fresh tyres costs around 20 seconds in total — strategy decides when to spend them.'},
+      {term:'Undercut', body:'Pitting before a rival so your fresh tyres gain you enough time to jump ahead when they make their own stop.'},
+      {term:'DNF', body:'Did Not Finish. Crash, mechanical failure or retirement — no points, and often a championship turning point.'},
+      {term:'Dirty Air', body:'Turbulent air behind another car that robs the following car of grip. It’s why overtaking is harder than it looks.'},
+      {term:'Safety Car', body:'Deployed after an incident to slow the field behind it. The pack bunches up, gaps vanish, and the race effectively restarts.'},
+    ];
+
     return {
       themeVars,
       startupError: s.startupError || null,
       // Initial data still in flight and no cold-start error to show: cover
       // the (otherwise empty) dashboard with a loading state so it doesn't
-      // look broken for the first second or two.
-      isLoading: !s.ready && !s.startupError,
+      // look broken for the first second or two. The basics page is static,
+      // so it stays readable even while the backend is still waking up.
+      isLoading: !s.ready && !s.startupError && s.page!=='basics',
       seasonLabel: s.meta?String(s.meta.season):String(new Date().getFullYear()),
       completedLabel: s.meta?(s.meta.completed+' of '+s.meta.totalRounds+' rounds complete'):'',
       lastUpdated: s.lastUpdated,
@@ -1160,7 +1394,13 @@ class Component extends DCLogic {
       onSearchInput:(e)=>{ const q=e.target.value; this.setState({searchQuery:q}); if(api) api.searchAll(q).then(r=>this.setState({searchResults:r.map(x=>this._wrapResult(x))})); },
       searchResults:s.searchResults.map(x=>this._wrapResult(x)),
       // pages
-      isOverview:s.page==='overview', isDrivers:s.page==='drivers', isRaces:s.page==='races', isTelemetry:s.page==='telemetry', isH2H:s.page==='h2h', isAI:s.page==='ai',
+      isOverview:s.page==='overview', isDrivers:s.page==='drivers', isRaces:s.page==='races', isTelemetry:s.page==='telemetry', isH2H:s.page==='h2h', isAI:s.page==='ai', isBasics:s.page==='basics',
+      // new-to-f1
+      showBasicsBanner:!s.basicsBannerDismissed,
+      goBasics:()=>this._goPage('basics'),
+      goOverview:()=>this._goPage('overview'),
+      dismissBasicsBanner:()=>{ try{localStorage.setItem('f1.basicsBannerDismissed','1');}catch(e){} this.setState({basicsBannerDismissed:true}); },
+      basicsNumbers, basicsWeekend, basicsPoints, basicsQuali, basicsTyres, basicsFlags, basicsJargon,
       // overview
       kpiCards, standingsRows, calendarCards,
       hasFavorites:s.favorites.length>0, favoriteCards,
